@@ -1,3 +1,7 @@
 from django.db import models
 
-# Create your models here.
+class UnresolvedQuery(models.Model):
+    question = models.TextField()
+    department = models.CharField(max_length=100)
+    reason = models.TextField()
+    resolved = models.BooleanField(default=False)
