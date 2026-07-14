@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Manage Users</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+    background:#f4f6f9;
+}
+
+.header{
+    background:white;
+    padding:20px 50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+}
+
+.logo{
+    font-size:30px;
+    font-weight:bold;
+    color:#1e3a8a;
+}
+
+.user{
+    font-size:17px;
+}
+
+.logout{
+    background:#dc3545;
+    color:white;
+    padding:10px 20px;
+    border-radius:8px;
+    text-decoration:none;
+    margin-left:20px;
+}
+
+.logout:hover{
+    background:#bb2d3b;
+}
+
+.container{
+    width:90%;
+    max-width:1300px;
+    margin:40px auto;
+}
+
+.title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.title h1{
+    color:#1e3a8a;
+}
+
+.add{
+    background:#1e3a8a;
+    color:white;
+    padding:12px 22px;
+    border-radius:8px;
+    text-decoration:none;
+}
+
+.add:hover{
+    background:#16327a;
+}
+
+.filter{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    margin-bottom:25px;
+}
+
+.filter input,
+.filter select{
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    font-size:15px;
+}
+
+.filter input{
+    width:260px;
+}
+
+.filter button{
+    padding:12px 20px;
+    border:none;
+    background:#1e3a8a;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.filter button:hover{
+    background:#16327a;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+
+th{
+    background:#1e3a8a;
+    color:white;
+    padding:15px;
+}
+
+td{
+    padding:15px;
+    text-align:center;
+    border-bottom:1px solid #eee;
+}
+
+tr:hover{
+    background:#eef4ff;
+}
+
+.edit,
+.reset,
+.delete{
+
+    color:white;
+    text-decoration:none;
+    padding:7px 12px;
+    border-radius:6px;
+    font-size:14px;
+    margin:2px;
+    display:inline-block;
+
+}
+
+.edit{
+    background:#0d6efd;
+}
+
+.reset{
+    background:#198754;
+}
+
+.delete{
+    background:#dc3545;
+}
+
+.edit:hover{
+    background:#0b5ed7;
+}
+
+.reset:hover{
+    background:#157347;
+}
+
+.delete:hover{
+    background:#bb2d3b;
+}
+
+.back{
+    display:inline-block;
+    margin-top:30px;
+    text-decoration:none;
+    color:#1e3a8a;
+    font-weight:bold;
+}
+
+.back:hover{
+    text-decoration:underline;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+    <div class="logo">
+        RAGLink
+    </div>
+
+    <div class="user">
+
+        Welcome <b>{{ request.user.username }}</b>
+
+        <a href="{% url 'logout' %}" class="logout">
+            Logout
+        </a>
+
+    </div>
+
+</div>
+
+<div class="container">
+
+<div class="title">
+
+<h1>Manage Users</h1>
+
+<a href="{% url 'add_user' %}" class="add">
++ Add User
+</a>
+
+</div>
+
+<form method="GET" class="filter">
+
+<input
+type="text"
+name="search"
+placeholder="Search Username"
+value="{{ search|default:'' }}">
+
+<select name="role">
+
+<option value="" {% if role == "" %}selected{% endif %}>
+All Roles
+</option>
+
+<option value="ADMIN" {% if role == "ADMIN" %}selected{% endif %}>
+Admin
+</option>
+
+<option value="TEAM_LEAD" {% if role == "TEAM_LEAD" %}selected{% endif %}>
+Team Lead
+</option>
+
+<option value="EMPLOYEE" {% if role == "EMPLOYEE" %}selected{% endif %}>
+Employee
+</option>
+
+</select>
+
+<input
+type="text"
+name="department"
+placeholder="Department"
+value="{{ department|default:'' }}">
+
+<button type="submit">
+Search
+</button>
+
+</form>
+
+<table>
+
+<tr>
+
+<th>Username</th>
+
+<th>Email</th>
+
+<th>Role</th>
+
+<th>Department</th>
+
+<th>Actions</th>
+
+</tr>
+
+{% for user in users %}
+
+<tr>
+
+<td>{{ user.username }}</td>
+
+<td>{{ user.email|default:"-" }}</td>
+
+<td>{{ user.get_role_display }}</td>
+
+<td>{{ user.department|default:"-" }}</td>
+
+<td>
+
+<a href="#" class="edit">
+Edit
+</a>
+
+<a href="#" class="reset">
+Reset
+</a>
+
+<a href="#" class="delete">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+
+<td colspan="5">
+
+No users found.
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+<a href="{% url 'dashboard' %}" class="back">
+
+← Back to Dashboard
+
+</a>
+
+</div>
+
+</body>
+
+</html>
