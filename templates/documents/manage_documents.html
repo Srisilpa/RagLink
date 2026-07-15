@@ -345,13 +345,8 @@ Search
 
 <td>
 
-<a
-href="{{ document.file.url }}"
-class="download"
-target="_blank">
-
-Download
-
+<a href="{% url 'download_document' document.id %}">
+    Download
 </a>
 
 {% if request.user.role == "ADMIN" %}

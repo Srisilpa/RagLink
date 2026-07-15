@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-
+from django.http import FileResponse
 from .models import Document
 from .forms import DocumentForm
 
@@ -146,4 +146,20 @@ def delete_document(request, document_id):
 
     return redirect(
         "manage_documents"
+    )
+
+from django.http import FileResponse
+
+@login_required(login_url="home")
+def download_document(request, document_id):
+
+    document = get_object_or_404(
+        Document,
+        id=document_id
+    )
+
+    return FileResponse(
+        document.file.open("rb"),
+        as_attachment=True,
+        filename=document.file.name.split("/")[-1]
     )

@@ -1,5 +1,4 @@
 from django.urls import path
-
 from . import views
 
 urlpatterns = [
@@ -8,6 +7,12 @@ urlpatterns = [
         "manage/",
         views.manage_documents,
         name="manage_documents"
+    ),
+
+    path(
+        "download/<int:document_id>/",
+        views.download_document,
+        name="download_document"
     ),
 
     path(
