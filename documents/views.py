@@ -4,31 +4,30 @@ from django.contrib import messages
 from django.http import FileResponse
 from .models import Document
 from .forms import DocumentForm
-
 import os
 
 
 @login_required(login_url="home")
 def manage_documents(request):
 
-    # Admin can see all documents
+    # -------------------------------
+    # Documents visible by role
+    # -------------------------------
     if request.user.role == "ADMIN":
-
         documents = Document.objects.all()
 
-    # Team Lead sees only their uploads
     elif request.user.role == "TEAM_LEAD":
-
         documents = Document.objects.filter(
             uploaded_by=request.user
         )
 
     else:
-
         return redirect("dashboard")
 
-    # Upload
-    if request.method == "POST":
+    # -------------------------------
+    # Upload Document
+    # -------------------------------
+    if request.method == "POST" and "upload_document" in request.POST:
 
         form = DocumentForm(
             request.POST,
@@ -54,8 +53,29 @@ def manage_documents(request):
 
         form = DocumentForm()
 
-    # Search
-    search = request.GET.get("search", "")
+    # -------------------------------
+    # Search Filters (GET)
+    # -------------------------------
+
+    search = request.GET.get(
+        "search",
+        ""
+    )
+
+    department = request.GET.get(
+        "department",
+        ""
+    )
+
+    category = request.GET.get(
+        "category",
+        ""
+    )
+
+    uploaded_by = request.GET.get(
+        "uploaded_by",
+        ""
+    )
 
     if search:
 
@@ -63,17 +83,11 @@ def manage_documents(request):
             title__icontains=search
         )
 
-    # Department Filter
-    department = request.GET.get("department", "")
-
     if department:
 
         documents = documents.filter(
             department__icontains=department
         )
-
-    # Category Filter
-    category = request.GET.get("category", "")
 
     if category:
 
@@ -81,6 +95,13 @@ def manage_documents(request):
             category__icontains=category
         )
 
+    if uploaded_by:
+
+        documents = documents.filter(
+            uploaded_by__username__icontains=uploaded_by
+        )
+
+    # Always newest first from Django
     documents = documents.order_by(
         "-upload_date"
     )
@@ -102,6 +123,8 @@ def manage_documents(request):
             "department": department,
 
             "category": category,
+
+            "uploaded_by": uploaded_by,
 
         }
 
@@ -148,7 +171,6 @@ def delete_document(request, document_id):
         "manage_documents"
     )
 
-from django.http import FileResponse
 
 @login_required(login_url="home")
 def download_document(request, document_id):
@@ -159,7 +181,13 @@ def download_document(request, document_id):
     )
 
     return FileResponse(
+
         document.file.open("rb"),
+
         as_attachment=True,
-        filename=document.file.name.split("/")[-1]
+
+        filename=os.path.basename(
+            document.file.name
+        )
+
     )

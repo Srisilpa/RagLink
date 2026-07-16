@@ -1,18 +1,13 @@
-# Python
+# Dataset files
+media/
+
+# Chroma vector database
+chroma_db/
+
+# Python cache
 __pycache__/
-*.py[cod]
-*.pyo
+*.pyc
 
-# Virtual Environment
+# Environment
 venv/
-
-# Django
-db.sqlite3
-
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+.env

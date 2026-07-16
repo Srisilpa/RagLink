@@ -1,9 +1,16 @@
 from django.db import models
 from django.conf import settings
+import os
 
 
 def document_upload_path(instance, filename):
-    return f"Projects/{filename}"
+    if instance.uploaded_by.role == "ADMIN":
+        return os.path.join("Company", filename)
+
+    elif instance.uploaded_by.role == "TEAM_LEAD":
+        return os.path.join("Projects", filename)
+
+    return os.path.join("Others", filename)
 
 
 class Document(models.Model):
@@ -34,7 +41,9 @@ class Document(models.Model):
         on_delete=models.CASCADE
     )
 
-    upload_date = models.DateTimeField(auto_now_add=True)
+    upload_date = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.title

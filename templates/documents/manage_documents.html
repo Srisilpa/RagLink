@@ -102,13 +102,27 @@ button:hover{
 
 .filter{
     display:flex;
+    align-items:flex-end;
     gap:15px;
-    flex-wrap:wrap;
-    margin-bottom:20px;
+    flex-wrap:nowrap;
+    margin-bottom:25px;
 }
 
-.filter input{
-    width:250px;
+.filter input,
+.filter select{
+    width:220px;
+    padding:12px;
+    border:1px solid #ccc;
+    border-radius:8px;
+    margin-top:0;
+    background:white;
+}
+
+.filter button{
+    margin-top:0;
+    padding:12px 22px;
+    height:46px;
+    white-space:nowrap;
 }
 
 table{
@@ -249,6 +263,7 @@ Logout
 
 {% csrf_token %}
 
+
 <label>Title</label>
 
 {{ form.title }}
@@ -284,69 +299,64 @@ Upload Document
 <input
 type="text"
 name="search"
-placeholder="Search Title"
-value="{{ search }}">
+placeholder="Search Title">
 
 <input
 type="text"
 name="department"
-placeholder="Department"
-value="{{ department }}">
+placeholder="Department">
 
 <input
 type="text"
 name="category"
-placeholder="Category"
-value="{{ category }}">
+placeholder="Category">
+
+<input
+type="text"
+name="uploaded_by"
+placeholder="Uploaded By">
+
+<select id="sortBy">
+    <option value="date" selected>Newest First</option>
+    <option value="name">Uploaded By (A-Z)</option>
+</select>
 
 <button type="submit">
-
 Search
-
 </button>
 
 </form>
+<table id="documentsTable">
 
-<table>
-
+<thead>
 <tr>
-
-<th>Title</th>
-
-<th>Department</th>
-
-<th>Category</th>
-
-<th>Version</th>
-
-<th>Uploaded By</th>
-
-<th>Date</th>
-
-<th>Actions</th>
-
+    <th>Title</th>
+    <th>Department</th>
+    <th>Category</th>
+    <th>Version</th>
+    <th>Uploaded By</th>
+    <th>Date</th>
+    <th>Actions</th>
 </tr>
+</thead>
+
+<tbody>
 
 {% for document in documents %}
 
 <tr>
 
 <td>{{ document.title }}</td>
-
 <td>{{ document.department }}</td>
-
 <td>{{ document.category }}</td>
-
 <td>{{ document.version }}</td>
-
 <td>{{ document.uploaded_by.username }}</td>
-
 <td>{{ document.upload_date|date:"d M Y" }}</td>
 
 <td>
 
-<a href="{% url 'download_document' document.id %}">
-    Download
+<a href="{% url 'download_document' document.id %}" class="download">
+Download
 </a>
 
 {% if request.user.role == "ADMIN" %}
@@ -355,9 +365,7 @@ Search
 href="{% url 'delete_document' document.id %}"
 class="delete"
 onclick="return confirm('Delete this document?');">
-
 Delete
-
 </a>
 
 {% endif %}
@@ -369,16 +377,12 @@ Delete
 {% empty %}
 
 <tr>
-
-<td colspan="7">
-
-No documents uploaded.
-
-</td>
-
+<td colspan="7">No documents uploaded.</td>
 </tr>
 
 {% endfor %}
+
+</tbody>
 
 </table>
 
@@ -388,7 +392,39 @@ No documents uploaded.
 
 </a>
 
+
+
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const sortBy = document.getElementById("sortBy");
+    const tbody = document.querySelector("#documentsTable tbody");
+
+    // Always show default option
+    sortBy.selectedIndex = 0;
+
+    sortBy.addEventListener("change", function () {
+
+        if (this.value !== "name")
+            return;
+
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        rows.sort(function(a, b) {
+            return a.cells[4].innerText.localeCompare(
+                b.cells[4].innerText
+            );
+        });
+
+        rows.forEach(function(row) {
+            tbody.appendChild(row);
+        });
+
+    });
+
+});
+</script>
 
 </body>
 
