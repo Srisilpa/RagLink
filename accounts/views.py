@@ -103,7 +103,7 @@ def employee_login(request):
 
             login(request, user)
 
-            return redirect("dashboard")
+            return redirect("chatbot")   # Directly open chat
 
         return render(
             request,
@@ -113,7 +113,10 @@ def employee_login(request):
             }
         )
 
-    return render(request, "registration/employee_login.html")
+    return render(
+        request,
+        "registration/employee_login.html"
+    )
 
 
 # -------------------------
@@ -137,10 +140,11 @@ def dashboard(request):
             "teamlead/teamlead_dashboard.html"
         )
 
-    return render(
-        request,
-        "employee/employee_dashboard.html"
-    )
+    elif request.user.role == "EMPLOYEE":
+
+        return redirect("chatbot")
+
+    return redirect("home")
 
 
 # -------------------------
@@ -261,7 +265,6 @@ def add_user(request):
         }
     )
 
-@login_required(login_url="home")
 @login_required(login_url="home")
 def edit_user(request, user_id):
 

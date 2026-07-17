@@ -1,41 +1,15 @@
 <div class="container">
 
-<h1>
+    <h1>
+        Employee Dashboard
+    </h1>
 
-Employee Dashboard
+    <p>
+        Welcome to RAGLink
+    </p>
 
-</h1>
-
-<p>
-
-Welcome to RAGLink
-
-</p>
-
-<div class="cards-container">
-
-<a href="{% url 'chatbot' %}" class="card">
-
-<div class="icon">
-
-🤖
-
-</div>
-
-<h2>
-
-Open AI Assistant
-
-</h2>
-
-<p>
-
-Ask questions about company documents.
-
-</p>
-
-</a>
-
-</div>
+    <script>
+        window.location.href = "{% url 'chatbot' %}";
+    </script>
 
 </div>

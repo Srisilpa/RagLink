@@ -5,18 +5,32 @@ from rag.generation.prompt import build_prompt
 from rag.generation.llm import LLM
 
 
+
 class RAGPipeline:
+
 
     def __init__(self):
 
         self.hybrid = HybridRetriever()
+
         self.reranker = Reranker()
+
         self.llm = LLM()
+
+
+
+    def generate(self, prompt: str):
+
+        return self.llm.generate(
+            prompt
+        )
+
 
 
     def ask(self, question: str):
 
         if not question.strip():
+
             raise ValueError(
                 "Question cannot be empty."
             )
@@ -28,8 +42,10 @@ class RAGPipeline:
 
 
         documents = [
+
             doc
             for doc, score in retrieved
+
         ]
 
 
@@ -41,8 +57,10 @@ class RAGPipeline:
 
 
         context = "\n\n".join(
+
             doc.page_content
             for doc in ranked
+
         )
 
 
@@ -57,10 +75,10 @@ class RAGPipeline:
         )
 
 
-        # Remove duplicate sources
         sources = []
 
         seen = set()
+
 
         for doc in ranked:
 
@@ -68,9 +86,11 @@ class RAGPipeline:
                 "source"
             )
 
+
             if source not in seen:
 
                 seen.add(source)
+
 
                 sources.append(
                     {
@@ -83,7 +103,11 @@ class RAGPipeline:
 
 
         return {
+
             "question": question,
+
             "answer": answer,
+
             "sources": sources
+
         }
