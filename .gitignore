@@ -17,3 +17,7 @@ data/chunks.pkl
 # IDE
 .vscode/
 .idea/
+
+# Generated RAG data
+data/
+
