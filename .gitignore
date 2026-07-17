@@ -1,13 +1,19 @@
-# Dataset files
-media/
-
-# Chroma vector database
-chroma_db/
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
 
-# Environment
+# Virtual Environment
 venv/
+
+# Environment Variables
 .env
+
+# Chroma Vector Database
+chroma_db/
+
+# Generated BM25 chunks
+data/chunks.pkl
+
+# IDE
+.vscode/
+.idea/

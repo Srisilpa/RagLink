@@ -1,34 +1,78 @@
-Django
+# ======================
+# Django
+# ======================
+Django>=5.2
 PyMySQL
+python-dotenv
 
+# ======================
+# LangChain
+# ======================
 langchain
-langchain-community
 langchain-core
+langchain-community
 langchain-text-splitters
 langchain-huggingface
+langchain-groq
 
+# ======================
+# LangGraph
+# ======================
 langgraph
 
+# ======================
+# Vector Database
+# ======================
 chromadb
 faiss-cpu
 
+# ======================
+# Embeddings
+# ======================
 sentence-transformers
 transformers
 torch
+accelerate
 
+# ======================
+# Document Loaders
+# ======================
 pypdf
 PyMuPDF
 python-docx
+docx2txt
 
+# ======================
+# Evaluation
+# ======================
 ragas
 
-python-dotenv
+# ======================
+# Retrieval
+# ======================
+rank-bm25
 
+# ======================
+# Reranker
+# ======================
+FlagEmbedding
+
+# ======================
+# Cache
+# ======================
+redis
+
+# ======================
+# Utilities
+# ======================
+requests
+tiktoken
 pandas
 numpy
-
 scikit-learn
+tqdm
 
-tiktoken
-
-requests
+# ======================
+# Groq
+# ======================
+groq

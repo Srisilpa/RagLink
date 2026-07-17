@@ -1,0 +1,347 @@
+Enterprise System Architecture & FAQ
+
+Series Tech Ltd. — Internal Use Only
+
+[Company Logo Placeholder — SeriesTech_Logo.png]
+
+Classification: Internal — Restricted Document Number: STL-ARCH-SYS-009 Version: 3.9 Last
+Updated: 2026-07-01 Owner: Chief Architect Approver: Chief Technology Officer (CTO)
+
+Revision History
+
+  Version   Date         Author               Summary of Changes
+  --------- ------------ -------------------- -------------------------------------------------
+  1.0       2023-01-20   A. Deshmukh (Arch)   Initial architecture overview
+  2.0       2024-04-11   A. Deshmukh (Arch)   Added AI Components and RAG Pipeline sections
+  3.0       2025-11-15   V. Krishnan (Arch)   Added Disaster Recovery and Scaling
+  3.9       2026-07-01   V. Krishnan (Arch)   Updated FAQ, refreshed Monitoring stack details
+
+-----------------------------------------------------------------------------------------------
+
+1. Introduction
+
+This document describes SeriesTech’s enterprise system architecture at a company-wide level,
+covering shared platform components used across products including Project Alpha, and answers
+frequently asked questions from Engineering, DevOps, and Projects teams.
+
+1.1 Audience
+
+Engineers, architects, DevOps engineers, and technical leads across all departments who need a
+shared understanding of how SeriesTech’s systems fit together.
+
+-----------------------------------------------------------------------------------------------
+
+2. High-Level Architecture
+
+2.1 Platform Layers
+
+SeriesTech’s platform is organized into four layers: the Presentation Layer (React/Angular
+applications), the API Layer (Django REST Framework and Spring Boot services), the Data and AI
+Layer (PostgreSQL, Redis, ChromaDB, FAISS, LLM serving), and the Infrastructure Layer (Docker,
+Kubernetes, Azure/AWS).
+
+2.2 Layer Diagram
+
+    +-----------------------------------------------------+
+    |  Presentation Layer: React, Angular                  |
+    +-----------------------------------------------------+
+    |  API Layer: Django REST Framework, Spring Boot        |
+    +-----------------------------------------------------+
+    |  Data & AI Layer: PostgreSQL, Redis, ChromaDB, FAISS, |
+    |                   Ollama/Llama, OpenAI APIs           |
+    +-----------------------------------------------------+
+    |  Infrastructure Layer: Docker, Kubernetes, Azure, AWS |
+    +-----------------------------------------------------+
+
+-----------------------------------------------------------------------------------------------
+
+3. Microservices
+
+3.1 Microservices Principles
+
+SeriesTech follows a domain-driven microservices approach: each service owns its data,
+communicates via REST APIs or asynchronous messaging (Redis Streams), and is independently
+deployable, consistent with the naming conventions in Engineering Standards (STL-ENG-STD-003),
+Section 3.2.
+
+3.2 Core Shared Services
+
+  -----------------------------------------------------------------------------------------------
+  Service                         Purpose                         Consumed By
+  ------------------------------- ------------------------------- -------------------------------
+  auth-service                    Centralized authentication and  All products
+                                  JWT issuance                    
+
+  notification-service            Email/Teams notifications       HR Connect, Project Alpha
+
+  audit-service                   Immutable audit logging for     All products handling
+                                  compliance                      Restricted data
+
+  ingestion-service               Document parsing and embedding  Project Alpha
+                                  (Project Alpha)                 
+
+  retrieval-service               Vector search and reranking     Project Alpha
+                                  (Project Alpha)                 
+  -----------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------
+
+4. Authentication
+
+4.1 Authentication Architecture
+
+auth-service issues JWTs following OAuth 2.0 flows: Authorization Code flow for user-facing
+applications, Client Credentials flow for service-to-service calls. Tokens are short-lived (15
+minutes) with refresh tokens valid for 7 days, revocable via auth-service’s token blacklist
+stored in Redis.
+
+4.2 SSO Integration
+
+Corporate SSO (Okta) is federated into auth-service for internal tools, while client tenants on
+Project Alpha may federate their own identity provider via OAuth 2.0, as described in the
+Project Alpha Requirements Specification (STL-ALPHA-REQ-004), FR-303.
+
+-----------------------------------------------------------------------------------------------
+
+5. Authorization
+
+5.1 Role-Based Access Control (RBAC)
+
+Authorization is enforced via role claims embedded in the JWT, validated by each service’s
+middleware. Standard roles include Admin, Uploader, Viewer (Project Alpha specific) and
+Employee, Manager, HRBP (internal HR Connect specific).
+
+5.2 Security Controls Summary
+
+  Control            Description
+  ------------------ -----------------------------------------------------------
+  JWT Expiry         15-minute access tokens, 7-day refresh tokens
+  Role Enforcement   Middleware-level checks on every API request
+  Tenant Isolation   Enforced at both API layer and ChromaDB collection layer
+  Audit Logging      All privileged actions logged immutably via audit-service
+
+-----------------------------------------------------------------------------------------------
+
+6. Database Design
+
+6.1 Relational Data
+
+PostgreSQL is the primary relational store across products, with MySQL retained for a small
+number of legacy internal tools pending migration. Each microservice owns its schema;
+cross-service joins are avoided in favor of API composition.
+
+6.2 Caching and Queuing
+
+Redis serves two purposes: as a cache layer for frequently accessed data (session tokens,
+rate-limit counters) and as a lightweight message queue (Redis Streams) for asynchronous
+workflows such as document ingestion status updates.
+
+-----------------------------------------------------------------------------------------------
+
+7. AI Components
+
+7.1 Component Inventory
+
+  -----------------------------------------------------------------------------------------------
+  Component                       Technology                      Purpose
+  ------------------------------- ------------------------------- -------------------------------
+  Embedding Generation            bge-large-en (self-hosted),     Converts text chunks to vector
+                                  OpenAI embeddings (opt-in)      representations
+
+  Vector Store                    ChromaDB (primary), FAISS       Stores and searches embeddings
+                                  (high-volume fallback)          
+
+  Orchestration                   LangChain                       Coordinates retrieval and
+                                                                  generation steps
+
+  Generation                      Llama 3 (via Ollama, on-prem),  Produces natural-language
+                                  OpenAI APIs (cloud opt-in)      answers
+
+  Reranking                       bge-reranker-base               Reorders retrieved chunks by
+                                                                  relevance
+  -----------------------------------------------------------------------------------------------
+
+7.2 Model Governance
+
+New LLM or embedding model versions must pass the RAG Quality Evaluation suite described in the
+Deployment Guide & QA Testing Guidelines (STL-DEVQA-DEP-008), Section 8.3, before being
+promoted to Production for any tenant.
+
+-----------------------------------------------------------------------------------------------
+
+8. RAG Pipeline
+
+8.1 Pipeline Summary
+
+The Retrieval-Augmented Generation pipeline used in Project Alpha follows: document ingestion
+and chunking, embedding generation, vector storage, query-time retrieval, reranking, and
+grounded generation with citations. Full detail is provided in the Project Alpha Technical
+Design Document (STL-ALPHA-TDD-005), Section 3.
+
+8.2 Cross-Reference Note
+
+Architecture-level governance of the RAG pipeline (model approval, tenant isolation review,
+capacity planning) is owned by the Architecture team, while day-to-day operation and feature
+development is owned by the Project Alpha Engineering team.
+
+-----------------------------------------------------------------------------------------------
+
+9. Monitoring
+
+9.1 Observability Stack
+
+SeriesTech uses Prometheus for metrics collection, Grafana for dashboards, and the ELK stack
+(Elasticsearch, Logstash, Kibana) for centralized logging across all Kubernetes-hosted
+services.
+
+9.2 Key Monitored Metrics
+
+  -----------------------------------------------------------------------------------------------
+  Metric                          Threshold                       Alert Destination
+  ------------------------------- ------------------------------- -------------------------------
+  API p95 latency                 Under 500ms (non-AI endpoints)  PagerDuty (DevOps on-call)
+
+  RAG query p95 latency           Per NFR-101/NFR-102 in          PagerDuty (Alpha on-call)
+                                  Requirements Spec               
+
+  Error rate                      Under 1% over 5-minute window   PagerDuty
+
+  ChromaDB collection size        Alert at 80% of provisioned     Architecture team, Slack
+                                  capacity                        
+
+  GPU utilization (Ollama nodes)  Alert above 90% sustained 15    DevOps on-call
+                                  minutes                         
+  -----------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------
+
+10. Scaling
+
+10.1 Scaling Approach
+
+Stateless API and retrieval services scale horizontally via Kubernetes Horizontal Pod
+Autoscalers, as detailed in the Deployment Guide (STL-DEVQA-DEP-008), Section 4.3. Stateful
+components (PostgreSQL, ChromaDB) scale vertically first, with read replicas and sharding
+introduced for high-tier tenants exceeding defined thresholds.
+
+10.2 Capacity Planning
+
+Architecture reviews capacity quarterly, correlating tenant growth on Project Alpha with
+ChromaDB collection sizes and GPU node utilization for Ollama-based deployments.
+
+-----------------------------------------------------------------------------------------------
+
+11. Disaster Recovery
+
+11.1 Backup Strategy
+
+PostgreSQL databases are backed up continuously via write-ahead log (WAL) archiving, with
+point-in-time recovery available up to 35 days. ChromaDB collections are snapshotted daily to
+object storage.
+
+11.2 Recovery Objectives
+
+  Component                          RPO         RTO
+  ---------------------------------- ----------- --------------------------------------------------
+  PostgreSQL (core data)             5 minutes   1 hour
+  ChromaDB (vector data)             24 hours    4 hours
+  Application services (stateless)   N/A         15 minutes (redeploy from last known-good image)
+
+11.3 DR Drill Cadence
+
+Disaster recovery drills are conducted twice yearly, jointly by Architecture and DevOps, with
+results reported to the CTO and documented in Confluence.
+
+-----------------------------------------------------------------------------------------------
+
+12. Frequently Asked Questions
+
+Q: Why does SeriesTech use both ChromaDB and FAISS? A: ChromaDB is the default vector store for
+most tenants due to its simpler operational model and native metadata filtering. FAISS is used
+as a fallback for very high-volume tenants where raw vector search throughput is the primary
+constraint.
+
+Q: Why does Project Alpha support both Ollama/Llama and OpenAI APIs? A: Some clients require
+on-premises or data-residency-compliant deployments, which Ollama-served Llama models satisfy.
+Other clients prioritize generation quality and are comfortable with cloud-hosted processing,
+for whom OpenAI APIs are offered as an opt-in.
+
+Q: Who approves changes to shared authentication (auth-service)? A: Any change to auth-service
+requires Architecture Review Board sign-off, per the Pull Request Process in Engineering
+Standards (STL-ENG-STD-003), Section 6.3.
+
+Q: What is the difference between RPO and RTO in the Disaster Recovery table? A: RPO (Recovery
+Point Objective) is the maximum acceptable data loss measured in time; RTO (Recovery Time
+Objective) is the maximum acceptable downtime before service is restored.
+
+Q: How is tenant data kept isolated in a shared Kubernetes cluster? A: Through a combination of
+namespace-level network policies, tenant-scoped database schemas or ChromaDB collections, and
+JWT-enforced tenant claims validated at the API layer.
+
+-----------------------------------------------------------------------------------------------
+
+12A. Architecture Governance
+
+12A.1 Architecture Review Board (ARB)
+
+The ARB meets weekly and reviews any proposed change to shared services (auth-service,
+notification-service, audit-service), any new external dependency (new SaaS tool, new LLM
+provider), and any change affecting tenant data isolation. Proposals are submitted via the
+Architecture Decision Record (ADR) template in Confluence at least 3 business days before the
+review.
+
+12A.2 Architecture Decision Records
+
+Every significant architectural decision, such as the choice of ChromaDB over a fully
+self-managed FAISS deployment for most tenants, is documented as an ADR capturing context,
+options considered, decision, and consequences, providing a durable record referenced during
+onboarding of new Architecture team members.
+
+12A.3 Technology Selection Criteria
+
+New technology proposals are evaluated against five criteria: operational maturity, licensing
+cost, security posture, talent availability within SeriesTech, and alignment with existing
+stack choices listed in Engineering Standards (STL-ENG-STD-003), Section 1.1.
+
+12B. Multi-Region Considerations
+
+12B.1 Region Selection
+
+Client tenants with data residency requirements are provisioned in region-specific Kubernetes
+clusters (for example, AKS in Central India for India-based clients, EKS in US regions for
+US-based clients), coordinated between Architecture and DevOps during the client onboarding
+phase described in the Project Alpha Requirements Specification (STL-ALPHA-REQ-004), Section
+6A.
+
+12B.2 Cross-Region Data Handling
+
+No client Restricted data is replicated across regions except for disaster recovery backups,
+which remain within the same broad jurisdiction (for example, EU backups stay within EU cloud
+regions) to satisfy data residency commitments made in client contracts.
+
+13. Internal Contacts
+
+  Purpose                          Contact
+  -------------------------------- ------------------------------------
+  Architecture Review Board        architecture-review@seriestech.com
+  Platform Reliability / SRE       sre@seriestech.com
+  Disaster Recovery Coordination   dr-coordination@seriestech.com
+
+14. Related Documents
+
+-   STL-ALPHA-TDD-005 — Project Alpha Technical Design Document
+-   STL-ALPHA-REQ-004 — Project Alpha Requirements Specification
+-   STL-DEVQA-DEP-008 — Deployment Guide & QA Testing Guidelines
+-   STL-ENG-STD-003 — Engineering Standards
+-   STL-IT-SEC-002 — IT Security & Infrastructure Guide
+
+15. References
+
+-   SeriesTech Cloud Infrastructure Standards, Architecture internal wiki, 2026
+-   Prometheus/Grafana Observability Runbook, SRE internal wiki
+-   Disaster Recovery Test Results, H1 2026, Architecture internal report
+
+-----------------------------------------------------------------------------------------------
+
+Internal Use Only — Series Tech Ltd. © 2026. Unauthorized distribution of this document outside
+the organization is prohibited.
