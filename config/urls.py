@@ -27,6 +27,8 @@ urlpatterns = [
 
     path("documents/", include("documents.urls")),
 
+    path("chatbot/", include("chatbot.urls")),
+
 ]
 
 
