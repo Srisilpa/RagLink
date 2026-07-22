@@ -12,32 +12,52 @@ from rag.tools.date import (
 from rag.tools.web_search import web_search
 
 
-
 class ChatService:
-
 
     def __init__(self):
 
         self.pipeline = RAGPipeline()
 
 
-
     def ask(self, question):
+
+        if not question or not question.strip():
+
+            return {
+                "answer": "Please enter a question.",
+                "sources": [],
+                "chunks": []
+            }
+
+
+        # =====================================================
+        # CLASSIFY QUERY
+        # =====================================================
 
         query_type = classify_query(
             question
         )
 
+        print(
+            f"Question: {question}"
+        )
 
-        # -------------------------
-        # Calculator
-        # -------------------------
+        print(
+            f"Query Type: {query_type}"
+        )
+
+
+        # =====================================================
+        # CALCULATOR
+        # =====================================================
 
         if query_type == "calculator":
 
             return {
 
-                "answer": calculate(question),
+                "answer": calculate(
+                    question
+                ),
 
                 "sources": [],
 
@@ -46,10 +66,9 @@ class ChatService:
             }
 
 
-
-        # -------------------------
-        # Date
-        # -------------------------
+        # =====================================================
+        # DATE
+        # =====================================================
 
         if query_type == "date":
 
@@ -64,10 +83,9 @@ class ChatService:
             }
 
 
-
-        # -------------------------
-        # Time
-        # -------------------------
+        # =====================================================
+        # TIME
+        # =====================================================
 
         if query_type == "time":
 
@@ -82,13 +100,11 @@ class ChatService:
             }
 
 
-
-        # -------------------------
-        # Web Search
-        # -------------------------
+        # =====================================================
+        # WEB SEARCH
+        # =====================================================
 
         if query_type == "web":
-
 
             results = web_search(
                 question
@@ -109,17 +125,16 @@ class ChatService:
                 }
 
 
-
             context = "\n\n".join(
 
                 [
 
                     f"""
 Title:
-{item.get('title')}
+{item.get('title', '')}
 
 Content:
-{item.get('snippet')}
+{item.get('snippet', '')}
 """
 
                     for item in results
@@ -129,37 +144,36 @@ Content:
             )
 
 
-
             prompt = f"""
 
-You are a factual assistant.
+You are a factual web search assistant.
 
-Answer ONLY using the information below.
+Answer ONLY using the information provided below.
 
 Rules:
-- Do not use your own knowledge.
-- Do not guess.
-- Do not add missing information.
-- If information is insufficient say:
+
+1. Do not use your own knowledge.
+2. Do not guess.
+3. Do not add information that is not present.
+4. If the information is insufficient, say:
 "I couldn't find reliable information."
 
 Information:
 
 {context}
 
-
 Question:
 
 {question}
 
-"""
+Answer:
 
+"""
 
 
             answer = self.pipeline.generate(
                 prompt
             )
-
 
 
             return {
@@ -168,7 +182,6 @@ Question:
 
                 "sources": [],
 
-
                 "chunks":
 
                 [
@@ -176,10 +189,16 @@ Question:
                     {
 
                         "title":
-                        item.get("title"),
+                        item.get(
+                            "title",
+                            ""
+                        ),
 
                         "content":
-                        item.get("snippet")
+                        item.get(
+                            "snippet",
+                            ""
+                        )
 
                     }
 
@@ -190,10 +209,15 @@ Question:
             }
 
 
-
-        # -------------------------
-        # Internal RAG
-        # -------------------------
+        # =====================================================
+        # INTERNAL RAG
+        #
+        # Company policies
+        # HR documents
+        # Projects
+        # Technical documents
+        # Knowledge base
+        # =====================================================
 
         return self.pipeline.ask(
             question

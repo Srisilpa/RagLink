@@ -1,0 +1,272 @@
+================================================================================
+SERIES TECH LIMITED ENTERPRISE OPERATIONS MANUAL
+Document Title: Quality Assurance and DevOps Framework & Operational Guidelines
+Document ID:    STL-ENG-QA-DEVOPS-2026-v1.1
+Effective Date: July 2026
+Primary Hubs:   Chennai Branch Office (QA Hub) & Bangalore Branch Office (DevOps Hub)
+Locations:      Hyderabad, Bangalore, Chennai, Pune, Mumbai
+Owner:          Quality Assurance & DevOps Steering Committee
+Target Audience: QA Engineers, DevOps Engineers, Software Engineers, Project Leads, AI Systems
+RAG Index Tag:  [DOC_TYPE: POLICY_FRAMEWORK] [ORG: SERIES_TECH_LIMITED] [DOMAIN: QA_DEVOPS_CI_CD]
+================================================================================
+
+1. EXECUTIVE PURPOSE & SCOPE
+--------------------------------------------------------------------------------
+PURPOSE:
+This document describes the complete Quality Assurance (QA) and DevOps framework at Series Tech Limited, covering the testing lifecycle, manual testing strategies, automated test suite architecture, defect reporting protocols, test case design standards, continuous integration and continuous deployment (CI/CD) pipelines, deployment approval workflows, production release governance, emergency rollback procedures, and environment management. It is written so that any employee involved in testing, engineering, or deployment at Series Tech Limited can understand these practices fully without needing another document.
+
+SCOPE:
+This document applies to all employees in the Quality Assurance and DevOps departments of Series Tech Limited, as well as software engineers, technical leads, and project managers who participate in testing and release activities across all Series Tech Limited regional development centers, particularly the Chennai Quality Assurance hub and the Bangalore DevOps hub.
+
+--------------------------------------------------------------------------------
+2. INTRODUCTION & ENGINEERING STRATEGY
+--------------------------------------------------------------------------------
+Series Tech Limited treats quality assurance and reliable deployment as core engineering disciplines, not afterthoughts. The Quality Assurance department, headquartered primarily in the Chennai branch office, works closely with the DevOps department, headquartered primarily in the Bangalore branch office, to ensure that every software release meets Series Tech Limited’s rigorous quality, security, and reliability standards before reaching client production environments.
+
+By embedding automated testing directly into CI/CD pipelines and establishing strict 3-tier production approval gates, Series Tech Limited ensures high velocity without sacrificing operational stability.
+
+--------------------------------------------------------------------------------
+3. END-TO-END TESTING LIFECYCLE
+--------------------------------------------------------------------------------
+The testing lifecycle at Series Tech Limited follows a structured multi-stage progression from requirements analysis through release sign-off:
+
+1. Requirement Analysis & Test Planning: QA leads review product requirements, user stories, and acceptance criteria to construct the project Test Plan.
+2. Test Case Design & Review: QA engineers draft granular test cases mapped directly to functional and non-functional requirements. Test cases undergo peer review by a Senior QA Engineer.
+3. Test Environment Setup & Data Preparation: Test data sets are provisioned in isolated testing environments matching staging configurations.
+4. Test Execution: Execution of manual exploratory tests and automated regression suites.
+5. Defect Logging & Severity Assessment: Identified defects are logged immediately in the centralized tracking system with steps to reproduce and logs.
+6. Defect Verification & Retesting: Fixed bugs are verified by QA against candidate builds in the testing environment.
+7. Final Test Sign-Off: QA Lead provides formal written sign-off confirming release readiness.
+
+Every project team at Series Tech Limited follows this testing lifecycle regardless of project size, though the depth of testing at each stage is scaled based on project complexity and risk profile.
+
+--------------------------------------------------------------------------------
+4. MANUAL TESTING STRATEGIES & EXPLORATORY PROTOCOLS
+--------------------------------------------------------------------------------
+Manual testing at Series Tech Limited is performed by Quality Assurance engineers in the Chennai hub and regional project teams to validate complex user workflows and non-scriptable scenarios.
+
+Key Manual Testing Focus Areas:
+- Exploratory Testing: Unscripted, creative investigation to discover edge cases and unexpected application behaviors.
+- Usability & UX Testing: Evaluating navigation intuitive flow, visual layout alignment, and user accessibility.
+- Complex UI Interactions: Testing dynamic drag-and-drop elements, multi-step modal dialogs, and responsive mobile layouts across varied viewports.
+- Cross-Browser & Device Verification: Manual sanity validation on target browser matrix combinations (Chrome, Firefox, Safari, Edge, iOS, Android).
+
+--------------------------------------------------------------------------------
+5. AUTOMATION TESTING & CI/CD PIPELINE INTEGRATION
+--------------------------------------------------------------------------------
+Series Tech Limited maintains comprehensive automated test suites for regression, integration, and API validation. Automation tests run automatically within continuous integration pipelines upon every code commit.
+
+Automated Test Suite Architecture & Tooling Matrix:
+- Unit & Integration Testing: PyTest (Python / Django projects), JUnit / TestNG (Java projects), Jest (Node.js / React projects). Minimum acceptable code coverage is 85%.
+- API & Backend Web Services: Postman CLI / Newman, REST Assured, PyTest requests. Automated API tests validate HTTP response codes, JSON schemas, and database mutations.
+- End-to-End (E2E) UI Automation: Selenium WebDriver, Cypress, Playwright. E2E scripts automate critical business flows (e.g., User Login -> Product Search -> Add to Cart -> Checkout).
+- Security Vulnerability Scanning: Bandit (Python static analysis), OWASP Dependency-Check, SonarQube static code analysis.
+
+--------------------------------------------------------------------------------
+6. DEFECT REPORTING & SEVERITY CLASSIFICATION
+--------------------------------------------------------------------------------
+Defects identified during testing at Series Tech Limited must be logged immediately in the project's centralized defect tracking tool. Bypassing bug logging for minor issues is strictly prohibited.
+
+Mandatory Defect Report Fields:
+- Unique Defect ID & Concise Title
+- Detailed Steps to Reproduce (Numbered list)
+- Expected Result vs. Actual Result Observed
+- Environment Details (Build version, Browser/OS, DB schema version)
+- Attachments (Console log traces, Network HAR files, Screenshots, Screen recordings)
+- Severity Level & Priority Rating
+
+Defect Severity Classification Matrix:
+- CRITICAL (S1): Complete system crash, data loss, security vulnerability, or blocking core workflow with no workaround. Requires immediate hotfix.
+- HIGH (S2): Major functional failure impacting core business logic, but a temporary manual workaround exists.
+- MEDIUM (S3): Non-critical feature malfunction or performance degradation that does not block key user flows.
+- LOW (S4): Minor cosmetic flaws, UI alignment errors, typos, or minor text layout bugs.
+
+--------------------------------------------------------------------------------
+7. TEST CASE SPECIFICATION STANDARDS
+--------------------------------------------------------------------------------
+Test cases at Series Tech Limited are written to map directly to specific user stories or requirement IDs, ensuring 100% requirement coverage traceability.
+
+Standard Test Case Anatomy:
+1. Test Case ID (e.g., TC_MERIDIAN_CHECKOUT_004)
+2. Module / Feature Name
+3. Preconditions (e.g., Authenticated user with items in cart)
+4. Test Data Inputs (e.g., Test credit card tokens, coupon codes)
+5. Step-by-Step Execution Instructions
+6. Expected Results (Explicit measurable criteria)
+7. Actual Results & Pass/Fail Status
+8. Reviewer Approval (Senior QA Engineer sign-off)
+
+--------------------------------------------------------------------------------
+8. CI/CD PIPELINE STAGES & AUTOMATION WORKFLOW
+--------------------------------------------------------------------------------
+Series Tech Limited uses automated Continuous Integration and Continuous Deployment (CI/CD) pipelines (built on Jenkins / GitHub Actions / GitLab CI) to automate the build, test, and release lifecycle.
+
+Standard CI/CD Pipeline Stages:
+1. Commit Stage: Developer pushes code to Git repository -> Triggers pipeline webhook.
+2. Static Code Analysis: SonarQube & Bandit scan source code for syntax errors, code smells, and security flaws.
+3. Automated Build: Container image compiled via Dockerfile -> Built artifacts stored in Container Registry.
+4. Test Execution Stage: Automated unit tests, integration tests, and API regression suites execute against the containerized build.
+5. Staging Deployment: Passing builds are automatically deployed to the Staging Environment following Team Lead sign-off.
+6. Production Release Gate: Manual approval trigger requiring 3-tier lead confirmations before production deployment.
+
+--------------------------------------------------------------------------------
+9. DEPLOYMENT APPROVAL WORKFLOWS & PRODUCTION RELEASE GATES
+--------------------------------------------------------------------------------
+Series Tech Limited strictly enforces role-segregated deployment authorization gates:
+
+Staging Environment Approval Workflow:
+- Requires Team Lead approval after automated unit and regression tests pass in the CI pipeline.
+
+Production Environment Approval Workflow (3-Tier Gate):
+1. QA Lead Sign-Off: Confirms all manual test cases executed, automated regression passed, and 0 open S1/S2 bugs exist.
+2. DevOps Lead Infrastructure Confirmation: Confirms cloud server provisioning, database migration readiness, SSL certificates, and backup verification.
+3. Project Lead Business Readiness Confirmation: Confirms client release acceptance, business stakeholder approval, and release notes accuracy.
+
+Production Release Maintenance Windows:
+Standard releases occur during designated low-traffic release windows (e.g., off-peak night/weekend windows). Critical Hotfixes may bypass release windows using expedited P1 authorization from the DevOps Lead and Project Lead.
+
+--------------------------------------------------------------------------------
+10. EMERGENCY ROLLBACK PROCEDURES & SERVICE RECOVERY
+--------------------------------------------------------------------------------
+If a production release introduces a critical failure, security exposure, or system instability, the DevOps department executes an immediate emergency rollback.
+
+Rollback Trigger Protocols:
+- Authority: The DevOps Lead or Project Lead can unilaterally initiate a rollback immediately without going through the full 3-tier approval chain.
+- Execution: Continuous deployment systems automatically revert traffic to the previous stable Docker container image tag or blue/green environment slot. Database migrations are rolled back using versioned down-migration scripts.
+- Post-Rollback Requirement: The engineering team must conduct a formal Root Cause Analysis (RCA) meeting within 24 hours to document the failure cause and implement preventative checks.
+
+--------------------------------------------------------------------------------
+11. ENVIRONMENT MANAGEMENT & SEGREGATION
+--------------------------------------------------------------------------------
+Series Tech Limited maintains strict physical and network segregation across four distinct deployment environments for every client project:
+
+1. Development Environment (DEV): Used by software engineers for active feature coding and developer unit testing.
+2. Testing Environment (TEST/QA): Managed by the Chennai QA hub for test execution, integration testing, and bug verification.
+3. Staging Environment (STAGE): Mirrors production architecture, database schema, and server specs for final User Acceptance Testing (UAT) and load testing.
+4. Production Environment (PROD): Live customer-facing environment. Access is strictly restricted to authorized Bangalore DevOps engineers using multi-factor authentication (MFA) and bastion hosts. Direct console modifications in production are strictly forbidden.
+
+--------------------------------------------------------------------------------
+12. ROLES & GOVERNANCE RESPONSIBILITIES
+--------------------------------------------------------------------------------
+- Quality Assurance Department (Chennai Hub): Responsible for test planning, manual execution, automated test maintenance, defect logging, and production release sign-off.
+- DevOps Department (Bangalore Hub): Responsible for CI/CD pipeline infrastructure, cloud server management, environment security, release deployments, and emergency rollbacks.
+- Software Engineers: Responsible for writing unit tests, fixing logged defects promptly, verifying fixes with QA, and maintaining clean code standards.
+- QA Leads & DevOps Leads: Responsible for enforcing policy compliance, conducting code/test reviews, and providing production release approvals.
+
+--------------------------------------------------------------------------------
+13. PRACTICAL OPERATIONAL SCENARIOS & BEST PRACTICES
+--------------------------------------------------------------------------------
+Scenario 1 (Request to Bypass Pipeline): An engineer requests to deploy a bug fix directly to production via FTP/SSH to save time. Action: Request rejected immediately. Policy strictly prohibits direct production edits; code must go through Git commit, automated testing, and CI/CD pipelines.
+
+Scenario 2 (Minor UI Bug Logging): A tester discovers a 1-pixel button misalignment. Action: Log the defect in the tracking tool as Low Severity (S4). All bugs must be logged to ensure full visibility into product quality.
+
+Scenario 3 (Production Outage Post-Release): A release causes database deadlock in production. Action: DevOps Lead triggers an immediate automated rollback to the prior release build, restoring live customer service within minutes.
+
+--------------------------------------------------------------------------------
+14. GLOSSARY & DEFINITIONS
+--------------------------------------------------------------------------------
+- Continuous Integration (CI): Automating code builds, static analysis, and testing execution upon every repository code commit.
+- Continuous Deployment (CD): Automatically deploying validated code builds into staging or production environments via automated pipelines.
+- Rollback: Reverting a production application and database environment back to a known previous stable release version.
+- Regression Testing: Re-running automated and manual test suites to confirm recent code changes have not broken existing features.
+
+--------------------------------------------------------------------------------
+15. FREQUENTLY ASKED QUESTIONS (FAQ KNOWLEDGE BASE)
+--------------------------------------------------------------------------------
+Q1: What is the testing lifecycle at Series Tech Limited?
+A1: Test planning, test case design, environment setup, execution, defect logging, verification, and sign-off.
+
+Q2: Where is the Quality Assurance hub of Series Tech Limited located?
+A2: Primarily in the Chennai branch office.
+
+Q3: Where is the DevOps hub of Series Tech Limited located?
+A3: Primarily in the Bangalore branch office.
+
+Q4: What is the difference between manual and automation testing?
+A4: Manual testing involves human execution of test cases for exploratory/usability scenarios, while automation testing uses scripted frameworks executed automatically in CI pipelines for regression validation.
+
+Q5: How are defects logged at Series Tech Limited?
+A5: In the project’s defect tracking tool with title, steps to reproduce, expected/actual results, environment specs, severity, and priority.
+
+Q6: Who approves staging deployments?
+A6: The team lead, once automated tests pass.
+
+Q7: Who approves production deployments?
+A7: The Quality Assurance lead (test sign-off), the DevOps lead (infrastructure readiness), and the project lead (business readiness).
+
+Q8: What triggers the continuous integration pipeline?
+A8: Every code commit pushed to the Git repository triggers an automated build and test execution workflow.
+
+Q9: What happens if a production release causes a critical issue?
+A9: The DevOps department initiates the rollback process to revert to the last known stable version.
+
+Q10: Who can initiate a rollback?
+A10: The DevOps lead or the project lead, without needing the full standard approval chain.
+
+Q11: What environments does Series Tech Limited maintain?
+A11: Development (DEV), Testing (TEST/QA), Staging (STAGE), and Production (PROD).
+
+Q12: Who has access to the production environment?
+A12: Only authorized DevOps engineers following strict access control policies.
+
+Q13: Can I make a direct change to the production environment?
+A13: No, all production changes must go through the approved CI/CD deployment process.
+
+Q14: What is required before a test case is added to the test suite?
+A14: Review and approval by a Senior Quality Assurance engineer.
+
+Q15: What does a test case include?
+A15: Unique identifier, description, preconditions, execution steps, expected results, and review sign-off.
+
+Q16: How is defect severity determined?
+A16: By the Quality Assurance engineer based on business impact, ranging from Critical (S1) to Low (S4).
+
+Q17: What happens if automated tests fail during continuous integration?
+A17: The build is marked as failed, and code cannot proceed or deploy until fixed.
+
+Q18: Are release notes required for production releases?
+A18: Yes, every production release must include a release notes document summarizing changes.
+
+Q19: Can a hotfix be released outside the standard release window?
+A19: Yes, critical hotfixes can be released outside standard windows with expedited P1 approval from DevOps and Project leads.
+
+Q20: Can interns perform manual testing?
+A20: Yes, QA interns can execute manual test cases under the direct supervision of a senior engineer.
+
+Q21: Can contractors access the production environment?
+A21: Only if explicitly authorized as part of the DevOps team, subject to standard access controls.
+
+Q22: What happens if Quality Assurance does not sign off on a release?
+A22: The release is blocked and cannot proceed to production until test sign-off is obtained.
+
+Q23: What is a defect tracking tool used for?
+A23: Logging, tracking, assigning, and managing defects found during testing.
+
+Q24: How does exploratory testing differ from scripted testing?
+A24: Exploratory testing relies on tester intuition to explore unscripted edge cases, whereas scripted testing follows predefined test cases.
+
+Q25: What is regression testing?
+A25: Re-executing test suites to confirm new code edits have not broken existing functionality.
+
+Q26: Who confirms infrastructure readiness before production deployment?
+A26: The DevOps lead.
+
+Q27: Who confirms business readiness before production deployment?
+A27: The project lead.
+
+Q28: What happens after a rollback is performed?
+A28: The engineering team conducts a formal Root Cause Analysis (RCA) within 24 hours to prevent future occurrences.
+
+Q29: Is defect logging required for minor cosmetic issues?
+A29: Yes, all defects must be logged regardless of how minor they seem.
+
+30: What is the purpose of environment management?
+A30: To maintain strict separation between development, testing, staging, and production so changes are validated safely before reaching live customers.
+
+--------------------------------------------------------------------------------
+16. DOCUMENT REVISION HISTORY
+--------------------------------------------------------------------------------
+Version | Date          | Summary of Changes                             | Approved By
+1.0     | January 2026  | Initial release of QA & DevOps Policy Manual   | Head of Quality Assurance
+1.1     | July 2026     | Annual review & production approval gate update | Head of DevOps & Head of QA
+================================================================================

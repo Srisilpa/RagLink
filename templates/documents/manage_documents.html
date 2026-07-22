@@ -261,34 +261,28 @@ Logout
 
 <form method="POST" enctype="multipart/form-data">
 
-{% csrf_token %}
+    {% csrf_token %}
 
+    <input type="hidden" name="upload_document" value="1">
 
-<label>Title</label>
+    <label>Title</label>
+    {{ form.title }}
 
-{{ form.title }}
+    <label>Department</label>
+    {{ form.department }}
 
-<label>Department</label>
+    <label>Category</label>
+    {{ form.category }}
 
-{{ form.department }}
+    <label>Version</label>
+    {{ form.version }}
 
-<label>Category</label>
+    <label>Select PDF</label>
+    {{ form.file }}
 
-{{ form.category }}
-
-<label>Version</label>
-
-{{ form.version }}
-
-<label>Select PDF</label>
-
-{{ form.file }}
-
-<button type="submit">
-
-Upload Document
-
-</button>
+    <button type="submit">
+        Upload Document
+    </button>
 
 </form>
 

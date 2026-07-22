@@ -1,0 +1,891 @@
+Series Tech Limited Operations and Support
+
+
+Purpose
+This document describes the complete operations and support framework at Series Tech Limited, covering customer support, ticket management, incident management, escalation matrix, Service Level Agreements, knowledge management, procurement, vendor management, administration, office facilities, and employee support services. It is written so that any employee of Series Tech Limited can understand these operational areas fully without needing another document.
+
+
+Scope
+This document applies to employees in the Customer Success, IT Support, Administration, and Finance departments of Series Tech Limited, as well as project teams that provide post-go-live support to clients, across all Series Tech Limited locations.
+
+
+
+Introduction
+Series Tech Limited maintains a strong operations and support function to ensure clients receive timely assistance after their projects go live, and to ensure employees receive reliable internal support for daily operational needs across all offices in Hyderabad, Bangalore, Pune, Chennai, and Mumbai.
+
+
+Customer Support
+The Customer Success department of Series Tech Limited, based primarily in the Mumbai office, manages ongoing client relationships and coordinates support requests raised by clients after a project goes live. Customer Success works closely with project teams to ensure client issues are resolved promptly and that client satisfaction remains high throughout the engagement.
+
+
+Ticket Management
+All client support requests and internal employee support requests at Series Tech Limited are logged as tickets in the appropriate support system, whether the client support portal for client-facing issues or the internal IT support portal for employee technology issues. Every ticket is assigned a category, priority, and owner, and is tracked until resolution and closure confirmation.
+
+
+
+Incident Management
+An incident at Series Tech Limited refers to any unplanned event that disrupts or degrades a client s use of a Series Tech Limited-delivered system. Incidents are classified by severity, ranging from Severity 1, representing a complete service outage, to Severity 4, representing a minor issue with a workaround available. Severity 1 and Severity 2 incidents trigger immediate engagement of the on-call engineer and the project lead.
+
+
+
+Escalation Matrix
+Series Tech Limited maintains a defined escalation matrix for support tickets and incidents. Tickets not resolved within the target resolution time are escalated automatically from the support engineer to the team lead, then to the project lead, and finally to the department head if still unresolved. Severity 1 incidents are escalated immediately and simultaneously to the project lead, the department head, and the Customer Success lead.
+
+
+
+Service Level Agreements
+Series Tech Limited commits to Service Level Agreements for each client project, defining target response times and resolution times based on incident severity. A typical Service Level Agreement at Series Tech Limited commits to responding to Severity 1 incidents within thirty minutes and providing an initial resolution or workaround within four hours, with longer target times for lower severity issues. Specific Service Level Agreement terms vary by client contract.
+
+
+
+Knowledge Management
+Series Tech Limited maintains a knowledge base for each client project, documenting common issues, their resolutions, and system runbooks used by support engineers. Employees are expected to contribute new knowledge base articles whenever they resolve a novel issue, so that similar issues can be resolved faster in the future.
+
+
+
+Procurement
+The Administration department of Series Tech Limited manages procurement of office supplies, equipment, and vendor services. Employees requiring procurement of items beyond standard office supplies must submit a procurement request through the internal administration portal, specifying business justification, which is reviewed by the Administration department and, for high-value purchases, approved by the Finance department.
+
+
+
+
+Vendor Management
+Series Tech Limited engages various vendors for services such as background verification, corporate travel booking, facility management, and specialized software licensing. The Administration and Finance departments jointly manage vendor contracts, ensuring vendor performance is reviewed periodically and that vendor agreements comply with Series Tech Limited s data security and confidentiality requirements.
+
+
+
+
+Administration
+The Administration department of Series Tech Limited manages office facilities, visitor registration, physical asset logistics, and general administrative support across the Hyderabad head office and the Bangalore, Pune, Chennai, and Mumbai branch offices. Administration also coordinates internal events and manages the office facilities budget for each location.
+
+
+
+Office Facilities
+Every Series Tech Limited office provides workstations, meeting rooms, a cafeteria, and recreational areas for employee wellbeing. Employees can book meeting rooms through the internal facilities booking system. Any facility issue, such as air conditioning malfunction or cafeteria equipment problems, should be reported to the Administration helpdesk.
+
+
+
+Employee Support Services
+Series Tech Limited provides employee support services including an employee assistance program offering confidential counseling support, an internal grievance redressal mechanism for workplace concerns, and a dedicated Human Resources helpdesk for policy questions. Employees can access these services through the internal HR portal or by contacting Human Resources directly.
+
+
+
+Department Responsibilities
+The Customer Success department is responsible for client relationship management and coordinating client support requests. The IT Support department is responsible for internal employee technology support. The Administration department is responsible for procurement, vendor management, and office facilities. The Finance department supports high-value procurement approval.
+
+
+Policies
+Series Tech Limited requires every support ticket to be logged in the appropriate system, regardless of how the request was initially received. Series Tech Limited requires Severity 1 incidents to be reported and escalated immediately, with no delay for internal confirmation. Series Tech Limited requires all vendor agreements to include data security and confidentiality clauses consistent with Series Tech Limited s cybersecurity standards.
+
+
+
+Procedures
+Clients raise support requests through the client support portal or by contacting their assigned Customer Success representative. Employees raise internal support requests through the internal IT support portal or the internal administration portal, depending on the nature of the request.
+
+
+
+Approval Workflow
+Standard procurement requests: Administration department review and approval. High-value procurement requests: Administration department review followed by Finance department approval. Incident escalation: automatic escalation through the defined escalation matrix based on severity and elapsed time.
+
+
+
+Employee Responsibilities
+Employees are responsible for logging support requests through the correct system, contributing to the knowledge base when resolving novel issues, and reporting facility issues to the Administration helpdesk promptly.
+
+
+
+Manager Responsibilities
+Managers and project leads are responsible for ensuring Service Level Agreement commitments are met for their client engagements, escalating unresolved tickets according to the escalation matrix, and supporting their team members in accessing employee support services when needed.
+
+
+
+Examples
+For example, a Severity 1 incident affecting Project Meridian, described in the Series Tech Limited Projects Guide, triggers immediate engagement of the on-call engineer and simultaneous escalation to the project lead, department head, and Customer Success lead, in line with the Series Tech Limited Service Level Agreement commitment to respond within thirty minutes.
+Another example: an employee resolves a novel configuration issue on a client system and documents the resolution as a new knowledge base article, helping future support engineers resolve similar issues faster.
+
+
+
+Employee Scenarios
+Scenario 1: An employee needs to book a meeting room for a client presentation. The employee should use the internal facilities booking system to reserve the room in advance.
+Scenario 2: A support ticket has not been resolved within its target resolution time. The ticket automatically escalates from the support engineer to the team lead, then the project lead, and finally the department head if still unresolved.
+Scenario 3: An employee wants to procure a specialized software license for a client project. The employee submits a procurement request through the internal administration portal, which is reviewed by Administration and, if high-value, approved by Finance.
+
+
+
+
+Common Mistakes
+A common mistake is handling a client request informally over email instead of logging it as a ticket, which reduces visibility and can cause the request to be missed. Another common mistake is delaying the escalation of a Severity 1 incident while attempting to resolve it independently, when immediate escalation is required. A third common mistake is failing to document a novel issue resolution in the knowledge base, causing the same issue to take longer to resolve next time.
+
+
+
+
+Frequently Asked Questions
+1. What is the difference between a Severity 1 and Severity 4 incident? Severity 1 is a complete service outage, while Severity 4 is a minor issue with a workaround available.
+2. How quickly must Series Tech Limited respond to a Severity 1 incident? Typically within thirty minutes, per standard Service Level Agreement commitments.
+3. How quickly must an initial resolution be provided for a Severity 1 incident? Typically within four hours, per standard Service Level Agreement commitments.
+4. Who is engaged immediately for a Severity 1 or Severity 2 incident? The on-call engineer and the project lead.
+5. How does the escalation matrix work for unresolved tickets? From support engineer to team lead, then project lead, then department head.
+6. Who manages client relationships after go-live? The Customer Success department, based primarily in Mumbai.
+7. Where do I log an internal technology support request? Through the internal IT support portal.
+8. Where do I log a procurement request? Through the internal administration portal.
+9. Who approves high-value procurement requests? The Administration department, followed by Finance department approval.
+10. What is the knowledge base used for? Documenting common issues, resolutions, and system runbooks for support engineers.
+11. Am I expected to contribute to the knowledge base? Yes, whenever you resolve a novel issue.
+12. How do I book a meeting room? Through the internal facilities booking system.
+13. Who do I contact for a facility issue like air conditioning malfunction? The Administration helpdesk.
+14. What employee support services does Series Tech Limited offer? An employee assistance program, a grievance redressal mechanism, and an HR helpdesk.
+15. How do I access the employee assistance program? Through the internal HR portal or by contacting Human Resources directly.
+16. Do Service Level Agreement terms vary by client? Yes, specific terms vary based on the client contract.
+17. Who manages vendor contracts at Series Tech Limited? The Administration and Finance departments jointly.
+18. What must every vendor agreement include? Data security and confidentiality clauses consistent with Series Tech Limited s cybersecurity standards.
+19. Can interns raise IT support tickets? Yes, interns can raise tickets through the internal IT support portal like any other employee.
+20. Can contractors access the client support portal? Contractors working on client-facing support roles may be granted access based on project need.
+21. What happens if a Severity 1 incident is not escalated immediately? It violates Series Tech Limited policy and delays critical response, increasing client impact.
+22. How are tickets categorized? By category, priority, and assigned owner.
+23. What is a runbook? A documented set of steps for resolving a specific type of incident or performing an operational task.
+24. Who reviews vendor performance? The Administration and Finance departments periodically.
+25. What should I do if I disagree with a workplace decision? Use the internal grievance redressal mechanism to raise the concern.
+26. Is the employee assistance program confidential? Yes, counseling support provided through the program is confidential.
+27. What happens when a ticket is resolved? It requires closure confirmation before being marked complete.
+28. Who coordinates internal company events? The Administration department.
+29. What is required before procurement of a high-value item? Business justification submitted through the internal administration portal and Finance department approval.
+30. Where can I find common issue resolutions for a client project? In the project-specific knowledge base maintained by the support team.
+
+
+
+Important Notes
+Employees should always log support requests through the appropriate system rather than handling them informally, since proper logging ensures accountability, accurate Service Level Agreement tracking, and continuity if the request needs to be handed over to another team member.
+
+
+
+Definitions
+Service Level Agreement: A formal commitment defining target response and resolution times for client support requests based on severity.
+Escalation Matrix: The defined sequence of roles to which an unresolved ticket or incident is escalated over time.
+Knowledge Base: A repository of documented issues, resolutions, and runbooks used to support faster issue resolution.
+
+
+Revision History
+Version
+Date
+Summary of Changes
+Approved By
+1.0
+Initial Release
+First publication of the Series Tech Limited Operations and Support document
+Head of Customer Success
+1.1
+Annual Review
+Updated incident severity definitions and escalation matrix
+Head of Customer Success
+
+
+====================================================================
+SERIES TECH LIMITED
+OPERATIONS AND SUPPORT – EXTENDED EMPLOYEE KNOWLEDGE GUIDE
+====================================================================
+
+DOCUMENT PURPOSE
+
+This document provides comprehensive operational guidance for employees
+of Series Tech Limited. It covers internal and client support, ticket
+management, incident management, escalation, Service Level Agreements,
+procurement, vendor management, administration, facilities, employee
+support, and common operational scenarios.
+
+IMPORTANT SLA RULE
+
+The standard Series Tech Limited SLA information in this document is
+provided as a general operational guideline.
+
+The actual SLA for a specific client project is determined by the signed
+client contract and project-specific support agreement.
+
+If a project-specific SLA conflicts with a standard Series Tech Limited
+operational guideline, the applicable client contract and approved
+project SLA take precedence.
+
+Employees must check project-specific support documentation before
+committing to response or resolution times.
+
+====================================================================
+1. TICKET PRIORITY AND SEVERITY MATRIX
+====================================================================
+
+Series Tech Limited classifies support tickets and incidents according
+to business impact, urgency, number of affected users, and availability
+of a workaround.
+
+SEVERITY 1 – CRITICAL
+
+A Severity 1 incident is a critical production issue that causes a
+complete service outage or prevents a critical business function from
+operating.
+
+Examples include complete application unavailability, critical database
+failure, complete production environment failure, or critical
+infrastructure failure affecting essential business operations.
+
+The target response time for a standard Series Tech Limited Severity 1
+incident is thirty minutes. The target initial resolution or workaround
+time is four hours, unless the specific client Service Level Agreement
+defines a different commitment.
+
+Severity 1 incidents require immediate engagement of the on-call
+engineer, Project Lead, Department Head, and Customer Success Lead.
+
+SEVERITY 2 – HIGH
+
+A Severity 2 incident is a major issue that significantly affects
+important functionality but does not result in a complete service
+outage.
+
+Examples include failure of a major application module, significant
+performance degradation, or an important business function becoming
+unavailable while other services continue to operate.
+
+Severity 2 incidents require prompt investigation by the Support
+Engineer and notification of the Team Lead and Project Lead.
+
+SEVERITY 3 – MEDIUM
+
+A Severity 3 incident affects limited functionality or a limited number
+of users. A temporary workaround is normally available.
+
+Examples include a non-critical application feature not working
+correctly, a problem affecting a small group of users, or a recurring
+issue with a documented workaround.
+
+Severity 3 incidents are handled during normal support operations.
+
+SEVERITY 4 – LOW
+
+A Severity 4 issue is a minor problem, information request, cosmetic
+issue, documentation issue, or non-urgent request.
+
+Examples include minor user interface defects, general information
+requests, documentation corrections, or minor configuration questions.
+
+Severity 4 requests are handled according to normal support queue
+priorities.
+
+IMPORTANT SEVERITY CLASSIFICATION RULE
+
+The final severity must be determined based on actual business impact
+and the applicable project support agreement. If the business impact is
+unclear, the Support Engineer should consult the Team Lead or Project
+Lead.
+
+The client-specific Service Level Agreement takes precedence over
+general Series Tech Limited operational guidelines when different
+response or resolution commitments apply.
+
+====================================================================
+2. TICKET LIFECYCLE
+====================================================================
+
+Every support request at Series Tech Limited follows a defined ticket
+lifecycle.
+
+STEP 1: TICKET CREATION
+
+The requester creates a ticket through the appropriate support system.
+Client issues must be logged through the client support portal or
+assigned Customer Success representative. Employee technology issues
+must be logged through the internal IT support portal. Administration
+requests must be submitted through the internal Administration portal.
+
+STEP 2: TICKET CATEGORIZATION
+
+The support team categorizes the ticket as an application issue,
+infrastructure issue, network issue, hardware issue, software request,
+access request, procurement request, facility issue, or general
+support request.
+
+STEP 3: PRIORITY AND SEVERITY ASSIGNMENT
+
+The support team evaluates business impact and urgency and assigns an
+appropriate priority or severity.
+
+STEP 4: TICKET ASSIGNMENT
+
+The ticket is assigned to the appropriate Support Engineer, team, or
+department. The assigned owner is responsible for investigation and
+accurate ticket updates.
+
+STEP 5: INVESTIGATION
+
+The assigned team investigates the issue, reviews available logs and
+documentation, communicates with the requester when information is
+required, and identifies the likely cause.
+
+STEP 6: RESOLUTION OR WORKAROUND
+
+The support team provides a permanent resolution whenever possible. If
+a permanent resolution requires additional development or maintenance,
+a temporary workaround may be provided.
+
+STEP 7: REQUESTER OR CLIENT CONFIRMATION
+
+After applying the resolution, the support team requests confirmation
+from the client or employee when appropriate.
+
+STEP 8: TICKET CLOSURE
+
+A ticket is closed after the issue has been resolved and confirmation
+has been received or the applicable support process permits closure.
+The ticket must contain sufficient information about the issue,
+investigation, resolution, and communication.
+
+STEP 9: KNOWLEDGE BASE UPDATE
+
+When a ticket represents a new or important issue, the Support Engineer
+should document the symptoms, cause, resolution steps, workaround, and
+prevention recommendations in the appropriate Series Tech Limited
+knowledge base.
+
+REOPENING A TICKET
+
+If the same issue occurs again shortly after closure, the requester may
+request that the ticket be reopened or create a new ticket referencing
+the previous ticket number.
+
+====================================================================
+3. DETAILED ESCALATION MATRIX
+====================================================================
+
+Series Tech Limited uses an escalation matrix to ensure that
+unresolved or critical issues receive appropriate management attention.
+
+LEVEL 1 – SUPPORT ENGINEER
+
+The Support Engineer investigates the ticket, communicates with the
+requester, and attempts to resolve the issue.
+
+LEVEL 2 – TEAM LEAD
+
+If the Support Engineer cannot resolve the issue within the applicable
+target time or requires additional technical assistance, the issue is
+escalated to the Team Lead.
+
+LEVEL 3 – PROJECT LEAD
+
+If the issue remains unresolved or creates significant project impact,
+the Team Lead escalates the issue to the Project Lead.
+
+LEVEL 4 – DEPARTMENT HEAD
+
+If the issue remains unresolved, creates significant business impact,
+or requires management intervention, the Project Lead escalates the
+issue to the Department Head.
+
+SEVERITY 1 ESCALATION
+
+Severity 1 incidents are escalated immediately. The on-call engineer,
+Project Lead, Department Head, and Customer Success Lead must be
+informed according to the applicable project support process.
+
+CLIENT ESCALATION
+
+If a client reports repeated unresolved issues or expresses significant
+dissatisfaction, the Customer Success Lead coordinates with the Project
+Lead and Department Head.
+
+SECURITY ESCALATION
+
+Any suspected cybersecurity incident, data exposure, unauthorized
+access, or security breach must be escalated immediately to the
+Cybersecurity team. Employees must not delay security escalation while
+attempting to investigate independently.
+
+ESCALATION RULE
+
+Escalation is based on severity, business impact, elapsed resolution
+time, repeated failures, and contractual Service Level Agreement
+requirements.
+
+====================================================================
+4. INCIDENT MANAGEMENT LIFECYCLE
+====================================================================
+
+Series Tech Limited follows a structured incident management lifecycle
+to restore affected services quickly and minimize business disruption.
+
+1. INCIDENT DETECTION
+
+An incident may be detected by a client, employee, monitoring system,
+Support Engineer, project team, or Customer Success representative.
+
+2. INCIDENT REGISTRATION
+
+The incident must be recorded in the appropriate support or incident
+management system. The ticket must include the affected system, time
+of occurrence, observed symptoms, affected users, and available
+evidence.
+
+3. SEVERITY CLASSIFICATION
+
+The support team determines severity based on business impact and
+urgency.
+
+4. INCIDENT ASSIGNMENT
+
+The incident is assigned to the appropriate Support Engineer or
+technical team. For Severity 1 and Severity 2 incidents, the on-call
+engineer and project leadership are engaged according to the applicable
+support process.
+
+5. INITIAL INVESTIGATION
+
+The technical team investigates the incident to identify the immediate
+cause and determine the extent of impact.
+
+6. STAKEHOLDER COMMUNICATION
+
+For major incidents, the Project Lead or Customer Success team
+communicates appropriate updates to affected stakeholders. Updates
+should include current impact, investigation status, workaround,
+expected next update, and service restoration status when available.
+
+7. MITIGATION AND WORKAROUND
+
+The support team attempts to reduce business impact by applying a
+temporary workaround or mitigation where possible.
+
+8. SERVICE RESTORATION
+
+The technical team restores the affected service and verifies normal
+operation.
+
+9. ROOT CAUSE ANALYSIS
+
+For significant incidents, the responsible technical team performs a
+Root Cause Analysis to identify the underlying technical or process
+failure and document corrective and preventive actions.
+
+10. POST-INCIDENT REVIEW
+
+The Project Lead and relevant technical teams review significant
+incidents to identify lessons learned and prevent recurrence.
+
+11. KNOWLEDGE BASE UPDATE
+
+The final resolution, root cause, workaround, and preventive actions
+should be documented in the Series Tech Limited knowledge base when
+useful for future support activities.
+
+====================================================================
+5. PROCUREMENT CATEGORIES AND APPROVAL GUIDELINES
+====================================================================
+
+Series Tech Limited procurement requests are categorized according to
+the type of purchase and business purpose.
+
+STANDARD OFFICE SUPPLIES
+
+Includes stationery, printing materials, meeting supplies, and routine
+office requirements. These requests are reviewed by Administration.
+
+IT EQUIPMENT
+
+Includes laptops, desktop computers, monitors, keyboards, docking
+stations, and other approved technology equipment. Requests require
+business justification and may require approval from the employee's
+manager, IT Support, Administration, or Finance.
+
+SOFTWARE LICENSES
+
+Requests must include software name, business purpose, number of users,
+project or department, expected cost, and license duration.
+
+CLOUD SERVICES
+
+Requests must identify the cloud platform, estimated usage, expected
+cost, project name, business purpose, and responsible technical owner.
+Cloud procurement must follow Series Tech Limited security and access
+requirements.
+
+CLIENT PROJECT PURCHASES
+
+Requests must include project name, project code, business
+justification, and expected project benefit. Additional client
+approval may be required for client-chargeable purchases.
+
+EMERGENCY PURCHASES
+
+Emergency purchases may be requested when an urgent business or
+operational requirement cannot wait for the standard procurement
+process. Emergency purchases require documented justification and
+appropriate post-purchase review.
+
+PROCUREMENT APPROVAL WORKFLOW
+
+1. Employee or project team identifies the requirement.
+2. Employee submits a procurement request through the internal
+   Administration portal.
+3. Request includes business justification, item details, estimated
+   cost, and required date.
+4. Administration reviews the request.
+5. Finance approval is obtained when required.
+6. Approved purchase is processed through the authorized procurement
+   process.
+7. Requester receives confirmation of procurement status.
+
+IMPORTANT PROCUREMENT RULE
+
+Employees must not purchase company equipment, software, or services
+independently and expect reimbursement unless prior approval has been
+obtained according to applicable procurement and finance policies.
+
+====================================================================
+6. EMPLOYEE SUPPORT DECISION GUIDE
+====================================================================
+
+LAPTOP OR DESKTOP PROBLEM
+Contact: IT Support
+
+NEW LAPTOP OR IT EQUIPMENT REQUEST
+Contact: IT Support and Administration
+
+INTERNAL SOFTWARE OR ACCESS PROBLEM
+Contact: IT Support
+
+MEETING ROOM BOOKING
+Contact: Administration through the internal facilities booking
+system.
+
+OFFICE FACILITY PROBLEM
+Contact: Administration Helpdesk.
+
+PROCUREMENT REQUEST
+Contact: Administration through the internal Administration portal.
+
+HIGH-VALUE PROCUREMENT
+Contact: Administration for initial review and Finance for required
+financial approval.
+
+SALARY OR PAYROLL QUESTION
+Contact: Finance or Human Resources according to the nature of the
+issue.
+
+HR POLICY QUESTION
+Contact: Human Resources.
+
+WORKPLACE GRIEVANCE
+Contact: Human Resources through the internal grievance redressal
+mechanism.
+
+EMPLOYEE COUNSELING SUPPORT
+Contact: Human Resources or the employee assistance program.
+
+CLIENT PRODUCTION INCIDENT
+Contact: Project Support Team and follow the applicable incident
+escalation process.
+
+CLIENT RELATIONSHIP ISSUE
+Contact: Customer Success department.
+
+CYBERSECURITY INCIDENT
+Contact: Cybersecurity team immediately.
+
+Employees must select the correct support channel so that the request
+can be categorized, assigned, tracked, and resolved efficiently.
+
+====================================================================
+7. ADDITIONAL EMPLOYEE SCENARIOS
+====================================================================
+
+SCENARIO 4: CRITICAL PRODUCTION OUTAGE
+
+A client reports that the entire production application is
+unavailable. The Support Engineer creates or updates a Severity 1
+incident ticket, notifies the on-call engineer, and follows the
+immediate escalation process. The Project Lead, Department Head, and
+Customer Success Lead are informed according to the applicable project
+support process.
+
+SCENARIO 5: EMPLOYEE LAPTOP FAILURE
+
+An employee's company laptop stops working during an active project.
+The employee creates an IT Support ticket and provides device details
+and a description of the problem. The employee informs the Team Lead if
+the problem prevents urgent project work. IT Support determines
+whether repair, replacement, or temporary equipment is required.
+
+SCENARIO 6: SOFTWARE LICENSE REQUEST
+
+A Software Engineer requires specialized software for a client
+project. The employee submits a procurement request containing the
+software name, business justification, project name, number of users,
+and expected cost. Administration reviews the request and obtains
+additional approval when required.
+
+SCENARIO 7: REPEATED CLIENT ISSUE
+
+A client reports that the same technical problem has occurred multiple
+times. The support team reviews previous tickets, identifies whether
+the incidents have a common root cause, and escalates the issue to the
+Project Lead if a permanent solution is required.
+
+SCENARIO 8: UNRESOLVED TICKET
+
+An employee has submitted an internal IT ticket, but the issue remains
+unresolved beyond the applicable target time. The ticket is reviewed
+for escalation according to the support escalation process.
+
+SCENARIO 9: OFFICE AIR CONDITIONING PROBLEM
+
+An employee notices that the air conditioning in a meeting room is not
+working. The employee reports the issue to the Administration Helpdesk
+with the office location and meeting room number. Administration
+coordinates with the appropriate facility vendor.
+
+SCENARIO 10: NEW KNOWLEDGE BASE ARTICLE
+
+A Support Engineer resolves a previously undocumented configuration
+issue. The engineer documents the symptoms, root cause, resolution
+steps, and workaround in the project knowledge base.
+
+SCENARIO 11: VENDOR SERVICE FAILURE
+
+A facility management vendor fails to provide a contracted service.
+Administration records the issue, communicates with the vendor, and
+evaluates vendor performance. Repeated failures may be escalated
+through vendor management.
+
+SCENARIO 12: WORKPLACE GRIEVANCE
+
+An employee has a workplace concern that cannot be resolved through
+normal management communication. The employee may use the internal
+grievance redressal mechanism or contact Human Resources.
+
+SCENARIO 13: SECURITY INCIDENT
+
+An employee suspects that company credentials have been compromised.
+The employee must immediately report the suspected security incident
+to the Cybersecurity team and follow the cybersecurity incident
+reporting procedure.
+
+SCENARIO 14: EMERGENCY PROCUREMENT
+
+A critical project requires an urgent replacement component that
+cannot wait for the standard procurement timeline. The project team
+submits an emergency procurement request with detailed justification.
+Administration reviews the request and obtains required financial
+approval.
+
+SCENARIO 15: CLIENT SUPPORT REQUEST RECEIVED BY EMAIL
+
+A client sends a technical support request directly to an employee's
+email. The employee must ensure that the request is logged in the
+appropriate client support system rather than handled only through
+email. This ensures proper tracking, ownership, SLA monitoring, and
+escalation.
+
+====================================================================
+8. ADDITIONAL FREQUENTLY ASKED QUESTIONS
+====================================================================
+
+31. What should I do if a client sends a support request directly to
+my email?
+
+The request should be logged in the appropriate client support system
+so it can be assigned, tracked, monitored against the applicable SLA,
+and closed properly.
+
+32. What is a Severity 1 incident?
+
+A Severity 1 incident is a critical production issue that causes a
+complete service outage or prevents a critical business function from
+operating.
+
+33. What is a Severity 2 incident?
+
+A Severity 2 incident is a major issue that significantly affects
+important functionality but does not result in a complete service
+outage.
+
+34. What is a Severity 3 incident?
+
+A Severity 3 incident is a medium-impact issue affecting limited
+functionality or a limited number of users, usually with a workaround
+available.
+
+35. What is a Severity 4 issue?
+
+A Severity 4 issue is a low-impact issue such as a minor defect,
+information request, documentation issue, or non-urgent request.
+
+36. Who decides the severity of an incident?
+
+The support team determines severity based on business impact and
+urgency. The Team Lead or Project Lead may be consulted when severity
+is unclear.
+
+37. Can the severity of an incident change?
+
+Yes. Incident severity may be increased or decreased if business
+impact changes during investigation.
+
+38. What happens after I create a support ticket?
+
+The ticket is categorized, assigned a priority or severity, assigned
+to an owner, investigated, resolved or provided with a workaround,
+confirmed by the requester when appropriate, and then closed.
+
+39. Can I reopen a closed ticket?
+
+If the same issue occurs again shortly after closure, the requester may
+request that the ticket be reopened or create a new ticket referencing
+the previous ticket.
+
+40. What happens if a ticket is not resolved on time?
+
+The ticket is escalated according to the Series Tech Limited
+escalation matrix and the applicable Service Level Agreement.
+
+41. Who handles a critical production outage?
+
+The on-call engineer and relevant project support team handle the
+technical response, while the Project Lead, Department Head, and
+Customer Success Lead are engaged according to the applicable
+escalation process.
+
+42. What should I do if I do not know the correct ticket severity?
+
+Create the ticket with as much information as possible and consult the
+support team or Team Lead for appropriate severity classification.
+
+43. What information should I include in a support ticket?
+
+Include a clear description of the problem, affected system, time of
+occurrence, affected users, error messages, screenshots when
+available, business impact, and steps that reproduce the issue.
+
+44. What should I do if a production issue has no workaround?
+
+The issue should be treated according to its actual business impact.
+If it meets Severity 1 criteria, immediate escalation is required.
+
+45. Who should I contact for a laptop problem?
+
+Contact the IT Support department through the internal IT support
+portal.
+
+46. Who should I contact for an office facility problem?
+
+Contact the Administration Helpdesk and provide the office location
+and details of the facility issue.
+
+47. Who should I contact for a software license?
+
+Submit a procurement request through the internal Administration portal
+with the required business justification and project information.
+
+48. Can I buy software independently and claim reimbursement later?
+
+Employees should not independently purchase company software or
+services and expect reimbursement unless prior approval has been
+obtained according to applicable procurement and finance policies.
+
+49. What information is required for a procurement request?
+
+The request should include the item or service name, business
+justification, estimated cost, required date, department or project,
+and other information required by the procurement process.
+
+50. Who handles high-value procurement?
+
+Administration performs the initial review, and Finance provides
+financial approval when required.
+
+51. What should I do if a vendor does not provide an agreed service?
+
+Report the issue to Administration or the responsible vendor management
+team so the vendor can be contacted and the issue tracked.
+
+52. Who manages vendor contracts?
+
+Administration and Finance jointly manage vendor contracts according
+to their respective responsibilities.
+
+53. What happens after a major incident is resolved?
+
+The responsible team restores the service, verifies normal operation,
+performs Root Cause Analysis when required, conducts a post-incident
+review, and updates the knowledge base.
+
+54. What is Root Cause Analysis?
+
+Root Cause Analysis is a structured investigation used to identify the
+underlying reason an incident occurred and define corrective and
+preventive actions.
+
+55. Who communicates with clients during major incidents?
+
+The Project Lead and Customer Success team coordinate client
+communication according to the applicable project support process.
+
+56. Why should Support Engineers update the knowledge base?
+
+Knowledge base updates allow future Support Engineers to quickly find
+documented solutions, workarounds, and troubleshooting procedures for
+recurring or similar problems.
+
+57. Where should I report a suspected cybersecurity incident?
+
+Employees must immediately report suspected cybersecurity incidents to
+the Cybersecurity team according to the Series Tech Limited
+Cybersecurity Policy.
+
+58. Can I delay reporting a security incident until I confirm that a
+breach occurred?
+
+No. Suspected security incidents must be reported immediately.
+Employees should not delay reporting while attempting to independently
+confirm the incident.
+
+59. What should I do if I have a workplace grievance?
+
+Employees may use the internal grievance redressal mechanism or
+contact Human Resources according to the applicable company policy.
+
+60. Where can I find the resolution for a previously reported technical
+issue?
+
+Employees should search the appropriate project knowledge base or
+internal knowledge management system for documented issues,
+resolutions, workarounds, and runbooks.
+
+====================================================================
+DOCUMENT CONTROL
+====================================================================
+
+Company:
+Series Tech Limited
+
+Document:
+Operations and Support – Employee Knowledge Guide
+
+Document Type:
+Internal Operations and Support Knowledge Base
+
+Audience:
+Employees, Interns, Team Leads, Project Leads, Support Engineers,
+Customer Success Teams, Administration Teams, and Department Heads
+
+Classification:
+Internal Use
+
+Document Status:
+Active Knowledge Base Reference
+
+Important Note:
+Operational procedures, client-specific Service Level Agreements,
+contracts, and approved departmental policies may contain requirements
+that differ from general guidance in this document. Employees must
+follow the most specific and current approved policy or project
+agreement applicable to their situation.
+
+====================================================================
+END OF EXTENDED OPERATIONS AND SUPPORT KNOWLEDGE GUIDE
+====================================================================

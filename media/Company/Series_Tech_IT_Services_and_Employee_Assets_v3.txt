@@ -1,0 +1,263 @@
+Series Tech Limited IT Services and Employee Assets
+Full Enterprise Operational Policy, Asset Governance & Systems Manual
+Version 3.0 (July 2026)
+
+================================================================================
+1. PURPOSE & SCOPE
+================================================================================
+This document provides the complete, authoritative operational reference for IT services, infrastructure management, hardware asset lifecycle, software licensing, identity management, remote access, endpoint security, network rules, IT change management, and employee offboarding processes at Series Tech Limited.
+
+SCOPE:
+This policy applies to all full-time employees, part-time staff, interns, contractors, and third-party personnel who are issued Series Tech Limited IT assets or granted access to corporate networks, cloud platforms, or client environments across all operational hubs, including Hyderabad, Bangalore, Pune, Chennai, Mumbai, and hybrid remote workforces.
+
+================================================================================
+2. LAPTOP ALLOCATION & WORKSTATION TIER MATRIX
+================================================================================
+Series Tech Limited issues role-tailored computing hardware to ensure maximum developer velocity and operational performance.
+
+Tiers of Hardware Allocation:
+- Developer & Cloud Tier (Software Development, AI, DevOps, Data Engineering):
+  High-performance workstations (Apple MacBook Pro 16" M-Series / Dell XPS 15, 32GB-64GB RAM, 1TB NVMe SSD). Configured for running local Docker containers, Kubernetes minikubes, and machine learning models.
+- Core & Administrative Tier (HR, Finance, Operations, Business Development):
+  Standard enterprise laptops (Dell Latitude / Lenovo ThinkPad, 16GB RAM, 512GB SSD). Configured for productivity applications and cloud SaaS platforms.
+- Specialized Lab Workstations (QA Testing, High-Performance Compute):
+  Dedicated desktop workstations allocated at regional hubs (e.g., Chennai QA labs, Bangalore AI research center) equipped with multi-GPU acceleration or isolated lab network interfaces. Desktop allocation requires manager approval and IT Infrastructure sign-off.
+
+Hardware Protection Policies:
+1. Tamper Prohibition: Opening laptop casings, replacing internal memory/storage, or disabling hardware switches voids warranty and violates corporate policy.
+2. Endpoint Agent Safeguards: The pre-installed Endpoint Detection and Response (EDR) agent (CrowdStrike / Defender for Endpoint) must remain active at all times. Tampering with or stopping security services leads to immediate access revocation.
+3. Dual-Screen & Peripheral Allocation: Employees are eligible for 1x 27-inch 4K Monitor, ergonomic wireless keyboard/mouse, and noise-canceling headset upon request via the IT Portal.
+
+================================================================================
+3. IT ASSET INVENTORY & LIFECYCLE TRACKING
+================================================================================
+Series Tech Limited tracks every hardware asset throughout its complete operational lifecycle:
+
+Asset Tracking & Tagging:
+- Every physical device (laptop, desktop, monitor, mobile device) is assigned a unique Asset ID barcode and logged alongside its serial number in the central IT Asset Management System (ITAMS).
+- Asset status transitions through defined states: In Stock → Assigned → Maintenance/Repair → Lost/Stolen → Retired/Decommissioned.
+
+Asset Transfer & Ownership Rules:
+- Assets are strictly linked to an employee's corporate ID. Peer-to-peer asset transfers without formal IT re-assignment through the portal are strictly prohibited.
+- Annual Asset Audits: IT Support conducts mandatory annual hardware verification audits across all offices and remote teams. Employees must verify hardware serial numbers via automated agent check-ins.
+
+================================================================================
+4. DEVICE REPLACEMENT & REFRESH POLICY
+================================================================================
+- Standard Refresh Cycle: Laptops and primary workstations are refreshed every 3 to 4 years to maintain optimal hardware performance and battery efficiency.
+- Battery & Performance Refresh Criteria: Devices exhibiting unrepairable hardware failures, battery capacity loss exceeding 35%, or persistent thermal throttling are eligible for expedited replacement upon IT diagnostic verification.
+- Temporary Loaner Process: If an employee's device requires hardware repair, a temporary loaner laptop with an identical software baseline is dispatched within 24 hours (P1/P2 issues).
+- Lost/Stolen Device Protocol: Lost or stolen devices must be reported immediately to IT Support and Cybersecurity to initiate emergency remote wipe via MDM. Replacement hardware is issued upon filing an official incident report.
+
+================================================================================
+5. ENDPOINT MANAGEMENT, PATCHING & COMPLIANCE
+================================================================================
+All company-managed endpoints must maintain active disk encryption, endpoint protection, host firewall, and automatic security updates. Devices failing compliance checks may be quarantined from corporate network access.
+
+Endpoint Compliance Requirements:
+- Disk Encryption: Full-disk encryption (BitLocker / FileVault) is mandatory on all endpoints. Encryption keys are securely escrowed in enterprise secret vaults.
+- Automatic Patching: OS security patches and third-party updates are auto-deployed weekly. Critical zero-day vulnerability patches must be applied within 48 hours of release.
+- Screen Lock Timeout: Workstations automatically lock after 5 minutes of inactivity. Biometric or complex password authentication is required to unlock.
+- USB & Peripheral Restrictions: Mass storage USB drives are blocked by default to prevent data exfiltration and malware introduction.
+
+================================================================================
+6. DATA BACKUP & ENDPOINT RECOVERY
+================================================================================
+- Approved Storage Locations: All work deliverables, source code, and project documentation must be stored in approved cloud locations (Google Workspace / OneDrive / Enterprise GitHub).
+- Local Storage Limitations: Local laptop storage is considered ephemeral and unbacked. Storing non-backed-up critical client data on local C: or root drives is prohibited.
+- Device Migration & Data Recovery: During laptop refresh or replacement, automated profile migration tools transfer browser bookmarks, user profiles, and cloud-synced documents within 2 hours.
+
+================================================================================
+7. EMPLOYEE OFFBOARDING & ACCESS REVOCATION
+================================================================================
+The IT access offboarding lifecycle is fully synchronized with HR status changes:
+- Access Revocation Timeline: Upon effective termination or resignation time, single sign-on (SSO), VPN, email, JIRA, and Git repository access are revoked immediately (< 15 minutes).
+- Device MDM Lock & Remote Wipe: Unreturned or remote offboarding laptops are locked via MDM and issued a cryptographic remote wipe command upon clearance completion.
+- Physical Security & Badge Deactivation: Office access badges are deactivated at the end of the last working day.
+- Data Ownership Transfer: The offboarded employee's manager is granted temporary read-only access to relevant cloud drive files for 30 days to complete business handover.
+
+================================================================================
+8. MOBILE DEVICE & BYOD POLICY
+================================================================================
+Personal devices may not access restricted corporate or client environments unless explicitly authorized and enrolled in the approved MDM/BYOD security program.
+
+- MDM Containerization: Enrolled mobile devices utilize containerized workspaces separating corporate email, Slack, and calendars from personal applications and photos.
+- Remote Wipe Scope: Corporate remote wipe commands affect only the secure business container; personal photos, messages, and apps on BYOD devices remain untouched.
+- Security Baselines: Enrolled mobile devices must maintain active device pin/biometric locks, OS encryption, and up-to-date security patches. Rooted or jailbroken devices are strictly blocked.
+
+================================================================================
+9. NETWORK, WI-FI & REMOTE CONNECTIVITY
+================================================================================
+- Corporate & Guest Wi-Fi: Corporate Wi-Fi (SeriesTech-Secure) uses WPA3-Enterprise with 802.1X certificate authentication. Guest Wi-Fi (SeriesTech-Guest) is isolated from internal servers.
+- Public Wi-Fi Restrictions: Employees connecting company laptops to public Wi-Fi networks (airports, cafes, hotels) must keep the corporate VPN enabled with active EDR controls.
+- Network Segmentation: Development, Staging, and Production network segments are isolated using micro-segmentation and firewalls. Rogue access points, unauthorized routers, and personal Wi-Fi hotspots are prohibited in corporate offices.
+
+================================================================================
+10. SOFTWARE CATALOG & LICENSING COMPLIANCE
+================================================================================
+Software installation is governed by strict licensing, security, and approval workflows.
+
+10.1 Approved Self-Service Software Catalog:
+Engineers can install pre-vetted tools directly via the Series Tech Software Hub without supervisor approval:
+- IDEs & Editors: VS Code, IntelliJ IDEA Community, PyCharm Community, Eclipse.
+- Utilities & Containers: Docker Desktop (Enterprise Licensed), Git, Postman, Node.js, Python, OpenJDK.
+- Collaboration: Slack, Microsoft Teams, Zoom, Google Workspace.
+
+10.2 Licensing Rules & Piracy Prohibition:
+- Piracy Ban: Cracked, pirated, or unauthorized software is strictly prohibited. Violation leads to immediate disciplinary action.
+- Open-Source Compliance: Open-source software with permissive licenses (MIT, Apache 2.0, BSD) is permitted; copyleft licenses (GPL v3) require legal review before inclusion in client deliverables.
+- License Reclamation: Unused software licenses are auto-reclaimed after 60 days of inactivity.
+
+================================================================================
+11. IT CHANGE MANAGEMENT & SERVICE CATALOG
+================================================================================
+11.1 IT Change Management Workflow:
+- Standard Changes: Pre-approved low-risk changes (e.g., standard software deployment, patch updates) executed during routine windows.
+- Normal Changes: Requires Technical Advisory Board (TAB) review and manager sign-off (e.g., major network routing changes, software upgrades).
+- Emergency Changes: Critical production/security incident fixes reviewed and approved by the Emergency Change Advisory Board (ECAB).
+
+11.2 IT Service Level Agreements (SLAs) & Escalation Matrix:
++----------+----------------------------------------+----------------+-------------------+--------------------+
+| Priority | Example Scenario                       | First Response | Target Resolution | Escalation Path    |
++----------+----------------------------------------+----------------+-------------------+--------------------+
+| P1       | Laptop dead, company-wide VPN down     | < 15 mins      | < 4 hours         | IT Lead            |
+| P2       | Core dev tool / VPN access blocked     | < 1 hour       | < 8 hours         | Senior IT Specialist|
+| P3       | Non-blocking request / Peripheral issue| < 4 hours      | < 2 working days  | IT Support Lead    |
++----------+----------------------------------------+----------------+-------------------+--------------------+
+
+================================================================================
+12. IT & OPERATIONS DECISION MATRIX
+================================================================================
+Direct, retrievable operational guidance for common IT questions:
+
+Question: Can I use my personal laptop for official work?
+Answer: No. Only company-issued devices managed under corporate MDM can connect to internal systems or client environments.
+
+Question: What should I do if my laptop is stolen or lost?
+Answer: Report it immediately to IT Support and Cybersecurity via telephone or emergency portal so remote wipe commands can be executed.
+
+Question: Who approves non-catalog software requests with cost implications?
+Answer: The Reporting Manager (for budget approval) followed by IT Support and Cybersecurity (for technical and risk vetting).
+
+Question: Can I share my VPN or network credentials with family members?
+Answer: No. Sharing credentials with anyone is strictly prohibited and constitutes a severe security breach.
+
+Question: How quickly are critical (P1) hardware or laptop issues addressed?
+Answer: Critical issues blocking work are prioritized for resolution within 4 working hours.
+
+Question: Can employees connect company laptops to public Wi-Fi?
+Answer: Yes, only when necessary and with the corporate VPN enabled and endpoint security controls active.
+
+Question: Can employees install pirated or unauthorized software?
+Answer: No. Pirated, cracked, or unauthorized software is strictly prohibited.
+
+Question: How does Series Tech Limited track employee IT assets?
+Answer: Every asset is assigned a unique Asset ID and serial number linked to the employee's corporate identity in the central ITAMS system.
+
+Question: What happens to corporate data on mobile devices during offboarding?
+Answer: The MDM system issues a selective wipe command removing only corporate data, email, and apps, leaving personal data untouched.
+
+================================================================================
+13. FREQUENTLY ASKED QUESTIONS (45 EXTENDED FAQS)
+================================================================================
+1. When do I receive my company laptop?
+   On your date of joining, coordinated by IT Support and Administration.
+2. Can I install any software I want?
+   Only software from the approved self-service catalog without additional approval; other software requires an IT request.
+3. How do I get VPN access?
+   VPN credentials are issued during onboarding for use exclusively on your assigned company laptop.
+4. Can I share my VPN credentials with a family member?
+   No, sharing VPN credentials is strictly prohibited and a serious security violation.
+5. How often must I change my password?
+   Every 90 days.
+6. What is the minimum password length required?
+   Twelve characters, combining uppercase, lowercase, numbers, and special characters.
+7. Is multi-factor authentication mandatory?
+   Yes, for email, VPN, cloud environments, and internal business applications.
+8. What do I do if I lose my multi-factor authentication device?
+   Report it to IT Support immediately for temporary account security and re-registration.
+9. How do I raise an IT support ticket?
+   Through the internal IT support portal, categorized by hardware, software, network, or access issue.
+10. How quickly are critical IT issues resolved?
+    Typically within four working hours.
+11. How quickly are non-critical IT issues resolved?
+    Within two working days.
+12. Can I forward official emails to my personal account?
+    No, forwarding official emails to personal accounts is strictly prohibited.
+13. What should I do with a suspicious email?
+    Report it using the phishing report button described in the Cybersecurity and Compliance document.
+14. Do I need approval for a desktop workstation?
+    Yes, approval from your reporting manager and IT Support is required.
+15. What happens if I damage my laptop beyond normal wear and tear?
+    A deduction may be made from your final settlement during exit clearance.
+16. Can interns receive company laptops?
+    Yes, interns receive a standard-configuration laptop for the duration of their internship.
+17. Can contractors get VPN access?
+    Contractors may be granted limited VPN access based on project requirements and approval.
+18. What happens if I open my laptop casing?
+    Opening the casing is not permitted and voids warranty coverage and IT policy compliance.
+19. How do I access shared printers?
+    Tap your registered employee ID card at the printer to release your print job.
+20. Is personal internet use allowed at work?
+    Reasonable personal use during breaks is permitted, subject to acceptable use restrictions.
+21. What if my VPN connection fails?
+    Restart the VPN client and check your internet connection before raising a ticket.
+22. What if my email is not syncing?
+    Verify your password has not expired before raising a ticket.
+23. Can I reuse an old password?
+    No, you cannot reuse any of your last ten passwords.
+24. What happens if my device is lost or stolen?
+    Report it to IT Support and Cybersecurity immediately.
+25. Who approves non-catalog software requests?
+    IT Support and Cybersecurity review the request, and the reporting manager approves cost implications.
+26. What happens during asset return at exit?
+    Assets must be returned in working condition as part of exit clearance.
+27. Is printer access restricted?
+    Yes, print jobs are released only when the employee taps their registered employee ID card.
+28. Who monitors internet usage?
+    IT Support monitors network traffic in accordance with the acceptable use policy.
+29. What if my ticket is not resolved within the service level?
+    Escalate through the internal IT support portal to route it to a senior IT Support specialist.
+30. Can I use my personal laptop for official work?
+    No, only company-issued devices should be used for accessing official Series Tech Limited systems.
+31. How does Series Tech Limited track employee IT assets?
+    Every asset is assigned a unique Asset ID and serial number linked to the employee's corporate identity.
+32. What is the standard laptop refresh cycle?
+    Every 3 to 4 years, or earlier in cases of severe battery degradation or unrepairable hardware failure.
+33. How quickly must critical zero-day OS patches be applied?
+    Within 48 hours of security patch release.
+34. Can I connect USB flash drives to my company laptop?
+    No, mass storage USB devices are blocked by default to prevent data exfiltration.
+35. How long before screen lock activates automatically?
+    After 5 minutes of inactivity.
+36. Where should employee files and project code be stored?
+    In approved cloud repositories (Google Drive, OneDrive, GitHub); local storage is unbacked.
+37. What happens to IT access upon resignation or termination?
+    SSO, VPN, email, and Git access are revoked immediately (< 15 minutes) upon effective offboarding.
+38. Can I use my personal phone for company email without MDM?
+    No, personal devices must be enrolled in the approved MDM program before accessing corporate email.
+39. Does corporate remote wipe delete personal photos on BYOD phones?
+    No, selective remote wipe affects only the encrypted corporate MDM container.
+40. Can I connect my company laptop to public cafe Wi-Fi?
+    Yes, provided the corporate VPN is active and endpoint security controls are running.
+41. Can employees setup personal Wi-Fi routers in the office?
+    No, unauthorized routers or personal access points are strictly prohibited.
+42. What is the SLA response time for P1 critical issues?
+    Under 15 minutes for first response, with a resolution target of under 4 hours.
+43. Can employees install pirated software?
+    No, pirated or cracked software is strictly prohibited and results in disciplinary action.
+44. Who approves Emergency IT changes?
+    The Emergency Change Advisory Board (ECAB).
+45. How are unused software licenses managed?
+    Unused licenses are automatically reclaimed after 60 days of inactivity.
+
+================================================================================
+14. DOCUMENT CONTROL & REVISION HISTORY
+================================================================================
+Version | Effective Date | Summary of Changes                              | Approved By
+--------|----------------|-------------------------------------------------|---------------------
+1.0     | January 2025   | Initial Release of IT Services Policy            | Head of IT Support
+1.1     | January 2026   | Annual Review: Password and MFA policy update   | Head of IT Support
+2.0     | July 2026      | Major Update: Hardware tiers, ZTNA, SLA matrix  | IT Architecture Board
+3.0     | July 2026      | Enterprise Update: Asset tracking, patching,    | Enterprise IT &
+        |                | offboarding lifecycle, BYOD, & change management| Security Council

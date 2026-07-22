@@ -4,18 +4,30 @@ import os
 
 
 def document_upload_path(instance, filename):
+
     if instance.uploaded_by.role == "ADMIN":
-        return os.path.join("Company", filename)
+        return os.path.join(
+            "Company",
+            filename
+        )
 
     elif instance.uploaded_by.role == "TEAM_LEAD":
-        return os.path.join("Projects", filename)
+        return os.path.join(
+            "Projects",
+            filename
+        )
 
-    return os.path.join("Others", filename)
+    return os.path.join(
+        "Others",
+        filename
+    )
 
 
 class Document(models.Model):
 
-    title = models.CharField(max_length=200)
+    title = models.CharField(
+        max_length=200
+    )
 
     department = models.CharField(
         max_length=100,
