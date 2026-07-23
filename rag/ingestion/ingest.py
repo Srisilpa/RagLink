@@ -1,84 +1,442 @@
 import os
 import pickle
-from pathlib import Path
 
-from rag.ingestion.loaders import load_file
-from rag.ingestion.processor import split_documents
+from rag.ingestion.processor import (
+    IngestionProcessor
+)
 
-from rag.embeddings.embedding_model import get_embedding_model
-from rag.vectorstore.chroma import create_vectorstore
+from rag.embeddings.embedding_model import (
+    get_embedding_model
+)
+
+from rag.vectorstore.chroma import (
+    create_vectorstore
+)
 
 
-DATA_PATH = "media"
+# =========================================================
+# CONFIGURATION
+# =========================================================
+
+MEDIA_DIR = "media"
+
+DATA_DIR = "data"
+
+CHUNKS_PATH = os.path.join(
+    DATA_DIR,
+    "chunks.pkl"
+)
+
+EMBEDDINGS_PATH = os.path.join(
+    DATA_DIR,
+    "chunk_embeddings.pkl"
+)
 
 
-def ingest():
+# =========================================================
+# GET FILES
+# =========================================================
 
-    documents = []
+def get_files(
+    directory
+):
 
-    for file in Path(DATA_PATH).rglob("*"):
+    supported_extensions = (
 
-        if file.suffix.lower() in [
-            ".pdf",
-            ".docx",
-            ".txt"
-        ]:
+        ".pdf",
 
-            print("Loading:", file)
+        ".txt",
 
-            docs = load_file(str(file))
+        ".docx"
 
-            documents.extend(docs)
-
-    print("\nTotal documents:", len(documents))
-
-    chunks = split_documents(documents)
-
-    print("Total chunks:", len(chunks))
-
-    # -------------------------------------------------
-    # Create data directory
-    # -------------------------------------------------
-
-    os.makedirs("data", exist_ok=True)
-
-    # -------------------------------------------------
-    # Save chunks
-    # -------------------------------------------------
-
-    with open("data/chunks.pkl", "wb") as f:
-        pickle.dump(chunks, f)
-
-    print("✅ Chunks saved.")
-
-    # -------------------------------------------------
-    # Generate embeddings
-    # -------------------------------------------------
-
-    embedding_model = get_embedding_model()
-
-    chunk_embeddings = embedding_model.embed_documents(
-        [doc.page_content for doc in chunks]
     )
 
-    with open("data/chunk_embeddings.pkl", "wb") as f:
-        pickle.dump(chunk_embeddings, f)
 
-    print("✅ Embeddings saved.")
+    files = []
 
-    # -------------------------------------------------
-    # Store in ChromaDB
-    # -------------------------------------------------
 
-    create_vectorstore(
-        chunks,
+    if not os.path.exists(
+        directory
+    ):
+
+        raise FileNotFoundError(
+
+            f"Media directory not found: "
+            f"{directory}"
+
+        )
+
+
+    for root, _, filenames in os.walk(
+        directory
+    ):
+
+        for filename in filenames:
+
+            if filename.lower().endswith(
+                supported_extensions
+            ):
+
+                files.append(
+
+                    os.path.join(
+                        root,
+                        filename
+                    )
+
+                )
+
+
+    return files
+
+
+# =========================================================
+# MAIN
+# =========================================================
+
+def main():
+
+    print(
+        "\n"
+        + "=" * 60
+    )
+
+    print(
+        "RAGLink Ingestion Pipeline"
+    )
+
+    print(
+        "=" * 60
+    )
+
+
+    # =====================================================
+    # CREATE DATA DIRECTORY
+    # =====================================================
+
+    os.makedirs(
+        DATA_DIR,
+        exist_ok=True
+    )
+
+
+    # =====================================================
+    # INITIALIZE PROCESSOR
+    # =====================================================
+
+    processor = IngestionProcessor(
+
+        chunk_size=200,
+
+        chunk_overlap=50
+
+    )
+
+
+    # =====================================================
+    # GET FILES
+    # =====================================================
+
+    files = get_files(
+        MEDIA_DIR
+    )
+
+
+    print(
+        f"\nFound {len(files)} documents."
+    )
+
+
+    if not files:
+
+        print(
+            "No documents found."
+        )
+
+        return
+
+
+    # =====================================================
+    # STORE ALL DOCUMENTS AND CHUNKS
+    # =====================================================
+
+    all_documents = []
+
+    all_chunks = []
+
+
+    # =====================================================
+    # PROCESS FILES
+    # =====================================================
+
+    for file_path in files:
+
+        print(
+            f"\nProcessing: {file_path}"
+        )
+
+
+        try:
+
+            result = processor.process(
+                file_path
+            )
+
+
+            documents = result[
+                "documents"
+            ]
+
+
+            chunks = result[
+                "chunks"
+            ]
+
+
+            # =============================================
+            # ADD TO GLOBAL LISTS
+            # =============================================
+
+            all_documents.extend(
+                documents
+            )
+
+
+            all_chunks.extend(
+                chunks
+            )
+
+
+            print(
+                f"Documents loaded: "
+                f"{len(documents)}"
+            )
+
+
+            print(
+                f"Chunks generated: "
+                f"{len(chunks)}"
+            )
+
+
+            print(
+                "Status: SUCCESS"
+            )
+
+
+        except Exception as e:
+
+            print(
+                f"Failed: {file_path}"
+            )
+
+
+            print(
+                f"Error: {e}"
+            )
+
+
+    # =====================================================
+    # CHECK RESULTS
+    # =====================================================
+
+    if not all_chunks:
+
+        print(
+            "\nNo chunks were generated."
+        )
+
+        return
+
+
+    print(
+        "\n"
+        + "=" * 60
+    )
+
+    print(
+        f"Total documents: "
+        f"{len(all_documents)}"
+    )
+
+    print(
+        f"Total chunks: "
+        f"{len(all_chunks)}"
+    )
+
+    print(
+        "=" * 60
+    )
+
+
+    # =====================================================
+    # SAVE CHUNKS
+    # =====================================================
+
+    print(
+        "\nSaving chunks..."
+    )
+
+
+    with open(
+        CHUNKS_PATH,
+        "wb"
+    ) as f:
+
+        pickle.dump(
+            all_chunks,
+            f
+        )
+
+
+    print(
+        f"Chunks saved to: "
+        f"{CHUNKS_PATH}"
+    )
+
+
+    # =====================================================
+    # LOAD EMBEDDING MODEL
+    # =====================================================
+
+    print(
+        "\nLoading embedding model..."
+    )
+
+
+    embedding_model = (
+        get_embedding_model()
+    )
+
+
+    # =====================================================
+    # CREATE EMBEDDINGS
+    # =====================================================
+
+    print(
+        "Generating embeddings..."
+    )
+
+
+    texts = [
+
+        doc.page_content
+
+        for doc in all_chunks
+
+    ]
+
+
+    all_embeddings = (
+
         embedding_model
+        .embed_documents(
+            texts
+        )
+
     )
 
-    print("✅ ChromaDB updated.")
 
-    print("✅ Ingestion completed.")
+    print(
+        f"Generated "
+        f"{len(all_embeddings)} embeddings."
+    )
 
+
+    # =====================================================
+    # SAVE EMBEDDINGS
+    # =====================================================
+
+    with open(
+        EMBEDDINGS_PATH,
+        "wb"
+    ) as f:
+
+        pickle.dump(
+            all_embeddings,
+            f
+        )
+
+
+    print(
+        f"Embeddings saved to: "
+        f"{EMBEDDINGS_PATH}"
+    )
+
+
+    # =====================================================
+    # CREATE CHROMADB
+    # =====================================================
+
+    print(
+        "\nCreating ChromaDB..."
+    )
+
+
+    vectorstore = create_vectorstore(
+
+        documents=all_chunks,
+
+        embedding_model=embedding_model
+
+    )
+
+
+    print(
+        "ChromaDB created successfully."
+    )
+
+
+    # =====================================================
+    # FINAL SUMMARY
+    # =====================================================
+
+    print(
+        "\n"
+        + "=" * 60
+    )
+
+    print(
+        "INGESTION COMPLETED SUCCESSFULLY"
+    )
+
+    print(
+        "=" * 60
+    )
+
+    print(
+        f"Documents: "
+        f"{len(all_documents)}"
+    )
+
+    print(
+        f"Chunks: "
+        f"{len(all_chunks)}"
+    )
+
+    print(
+        f"Chunks file: "
+        f"{CHUNKS_PATH}"
+    )
+
+    print(
+        f"Embeddings file: "
+        f"{EMBEDDINGS_PATH}"
+    )
+
+    print(
+        "ChromaDB: Created"
+    )
+
+    print(
+        "=" * 60
+    )
+
+
+# =========================================================
+# RUN
+# =========================================================
 
 if __name__ == "__main__":
-    ingest()
+
+    main()

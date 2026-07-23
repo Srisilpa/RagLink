@@ -1,32 +1,67 @@
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from rag.ingestion.loaders import DocumentLoader
+from rag.chunking.splitter import DocumentChunker
 
 
+class IngestionProcessor:
+    """
+    Handles document loading and chunking.
 
-def split_documents(documents):
+    This class is responsible only for:
+    1. Loading a document
+    2. Splitting it into chunks
+    """
 
-    # Remove empty pages/content
+    def __init__(
+        self,
+        chunk_size=200,
+        chunk_overlap=50
+    ):
 
-    cleaned_documents = []
+        self.loader = DocumentLoader()
 
-    for doc in documents:
-
-        text = doc.page_content.strip()
-
-        if text:
-            doc.page_content = text
-            cleaned_documents.append(doc)
-
-
-
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=100
-    )
-
-
-    chunks = splitter.split_documents(
-        cleaned_documents
-    )
+        self.chunker = DocumentChunker(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
 
 
-    return chunks
+    def process(
+        self,
+        file_path
+    ):
+
+        if not file_path:
+            raise ValueError(
+                "File path cannot be empty."
+            )
+
+
+        # ==========================================
+        # LOAD DOCUMENT
+        # ==========================================
+
+        documents = self.loader.load(
+            file_path
+        )
+
+
+        # ==========================================
+        # SPLIT INTO CHUNKS
+        # ==========================================
+
+        chunks = self.chunker.split_documents(
+            documents
+        )
+
+
+        # ==========================================
+        # RETURN BOTH
+        # ==========================================
+
+        return {
+
+            "documents": documents,
+
+            "chunks": chunks
+
+        }
