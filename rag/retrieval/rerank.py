@@ -1,118 +1,83 @@
-import os
-import pickle
+from typing import List, Tuple
 
-from sklearn.metrics.pairwise import cosine_similarity
-
-from rag.embeddings.embedding_model import (
-    get_embedding_model
-)
+from langchain_core.documents import Document
+from sentence_transformers import CrossEncoder
 
 
 class Reranker:
     """
-    Reranks retrieved documents using
-    embedding cosine similarity.
+    Cross-encoder based document reranker.
+
+    Takes retrieved documents and reranks them
+    according to their relevance to the query.
+
+    Returns:
+        List of (Document, relevance_score) tuples.
     """
 
     def __init__(
         self,
-        chunks_path: str = "data/chunks.pkl",
-        embeddings_path: str = "data/chunk_embeddings.pkl"
+        model_name: str = (
+            "cross-encoder/ms-marco-MiniLM-L-6-v2"
+        )
     ):
+        """
+        Initialize the cross-encoder reranker.
 
-        # ==========================================
-        # EMBEDDING MODEL
-        # ==========================================
+        Args:
+            model_name:
+                Hugging Face cross-encoder model name.
+        """
 
-        self.embedding_model = (
-            get_embedding_model()
+        self.model_name = model_name
+
+        self.model = CrossEncoder(
+            self.model_name
         )
 
-
-        # ==========================================
-        # CHECK FILES
-        # ==========================================
-
-        if not os.path.exists(
-            chunks_path
-        ):
-
-            raise FileNotFoundError(
-                f"Chunks file not found: "
-                f"{chunks_path}"
-            )
-
-
-        if not os.path.exists(
-            embeddings_path
-        ):
-
-            raise FileNotFoundError(
-                f"Chunk embeddings file not found: "
-                f"{embeddings_path}"
-            )
-
-
-        # ==========================================
-        # LOAD CHUNKS
-        # ==========================================
-
-        with open(
-            chunks_path,
-            "rb"
-        ) as f:
-
-            self.all_documents = (
-                pickle.load(f)
-            )
-
-
-        # ==========================================
-        # LOAD EMBEDDINGS
-        # ==========================================
-
-        with open(
-            embeddings_path,
-            "rb"
-        ) as f:
-
-            self.all_embeddings = (
-                pickle.load(f)
-            )
-
-
-        # ==========================================
-        # CREATE LOOKUP
-        # ==========================================
-
-        self.embedding_lookup = {}
-
-
-        for doc, embedding in zip(
-
-            self.all_documents,
-
-            self.all_embeddings
-
-        ):
-
-            self.embedding_lookup[
-
-                doc.page_content.strip()
-
-            ] = embedding
-
-
-    # ==============================================
+    # ==========================================
     # RERANK
-    # ==============================================
+    # ==========================================
 
     def rerank(
         self,
         query: str,
-        documents,
+        documents: list,
         top_k: int = 5
-    ):
+    ) -> List[Tuple[Document, float]]:
+        """
+        Rerank documents based on query relevance.
+
+        Args:
+            query:
+                User's search query.
+
+            documents:
+                List of LangChain Document objects.
+
+            top_k:
+                Number of top documents to return.
+
+        Returns:
+            List of:
+                (Document, relevance_score)
+
+            sorted from highest score to lowest score.
+
+        Raises:
+            ValueError:
+                If query is empty.
+
+            ValueError:
+                If documents is None.
+
+            ValueError:
+                If top_k is invalid.
+        """
+
+        # ==========================================
+        # VALIDATE QUERY
+        # ==========================================
 
         if not query or not query.strip():
 
@@ -120,108 +85,123 @@ class Reranker:
                 "Query cannot be empty."
             )
 
+        # ==========================================
+        # VALIDATE DOCUMENTS
+        # ==========================================
+
+        if documents is None:
+
+            raise ValueError(
+                "Documents cannot be None."
+            )
+
+        # ==========================================
+        # HANDLE EMPTY DOCUMENT LIST
+        # ==========================================
 
         if not documents:
 
             return []
 
-
         # ==========================================
-        # QUERY EMBEDDING
+        # VALIDATE TOP_K
         # ==========================================
 
-        query_embedding = (
+        if top_k <= 0:
 
-            self.embedding_model
-            .embed_query(
-                query
+            raise ValueError(
+                "top_k must be greater than 0."
             )
 
-        )
-
-
-        ranked = []
-
-
         # ==========================================
-        # CALCULATE SIMILARITY
+        # VALIDATE DOCUMENT OBJECTS
         # ==========================================
 
-        for doc in documents:
+        valid_documents = []
 
-            content = (
-                doc.page_content.strip()
-            )
+        for document in documents:
 
-
-            embedding = (
-
-                self.embedding_lookup
-                .get(
-                    content
-                )
-
-            )
-
-
-            if embedding is None:
+            if not isinstance(
+                document,
+                Document
+            ):
 
                 continue
 
+            if not document.page_content:
 
-            similarity = (
+                continue
 
-                cosine_similarity(
-
-                    [query_embedding],
-
-                    [embedding]
-
-                )[0][0]
-
+            valid_documents.append(
+                document
             )
 
+        # ==========================================
+        # HANDLE NO VALID DOCUMENTS
+        # ==========================================
 
-            ranked.append(
+        if not valid_documents:
 
-                (
+            return []
 
-                    doc,
+        # ==========================================
+        # PREPARE QUERY-DOCUMENT PAIRS
+        # ==========================================
 
-                    float(
-                        similarity
-                    )
+        pairs = [
 
-                )
-
+            (
+                query,
+                document.page_content
             )
 
+            for document in valid_documents
+
+        ]
 
         # ==========================================
-        # SORT
+        # CALCULATE RELEVANCE SCORES
         # ==========================================
 
-        ranked.sort(
+        scores = self.model.predict(
+            pairs
+        )
 
-            key=lambda x: x[1],
+        # ==========================================
+        # COMBINE DOCUMENTS AND SCORES
+        # ==========================================
+
+        scored_documents = [
+
+            (
+                document,
+                float(score)
+            )
+
+            for document, score
+            in zip(
+                valid_documents,
+                scores
+            )
+
+        ]
+
+        # ==========================================
+        # SORT BY RELEVANCE SCORE
+        # ==========================================
+
+        scored_documents.sort(
+
+            key=lambda item: item[1],
 
             reverse=True
 
         )
 
-
         # ==========================================
-        # RETURN DOCUMENTS ONLY
+        # RETURN TOP-K DOCUMENTS
         # ==========================================
 
-        return [
-
-            doc
-
-            for doc, score
-
-            in ranked[
-                :top_k
-            ]
-
+        return scored_documents[
+            :top_k
         ]

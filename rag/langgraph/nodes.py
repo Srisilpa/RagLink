@@ -4,6 +4,7 @@ from rag.retrieval.rerank import Reranker
 from rag.generation.prompt import build_prompt
 from rag.generation.llm import GroqLLM
 
+
 cache = MemoryCache()
 retriever = HybridRetriever()
 reranker = Reranker()
@@ -33,9 +34,14 @@ def retrieve_documents(state):
     if state["cache_hit"]:
         return state
 
-    docs = retriever.search(question=state["question"])
+    docs = retriever.search(
+        question=state["question"]
+    )
 
-    state["retrieved_docs"] = [doc for doc, _ in docs]
+    state["retrieved_docs"] = [
+        doc
+        for doc, _ in docs
+    ]
 
     return state
 
@@ -82,7 +88,9 @@ def generate_answer(state):
         context=state["context"]
     )
 
-    answer = llm.generate(prompt)
+    answer = llm.generate(
+        prompt
+    )
 
     state["answer"] = answer
 

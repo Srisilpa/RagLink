@@ -7,8 +7,12 @@ class TestPipeline(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+
         cls.pipeline = RAGPipeline()
 
+    # ==========================================
+    # LEAVE POLICY
+    # ==========================================
 
     def test_leave(self):
 
@@ -16,60 +20,109 @@ class TestPipeline(unittest.TestCase):
             "What is the leave policy?"
         )
 
-        print("\nLeave Query Result:")
-        print(result)
+        print(
+            "\nLeave Query Result:"
+        )
 
+        print(
+            result
+        )
 
-        # Check answer exists
+        # Check result structure
+
+        self.assertIn(
+            "question",
+            result
+        )
+
         self.assertIn(
             "answer",
             result
         )
 
-
-        # Check sources exist
         self.assertIn(
             "sources",
             result
         )
 
-
-        self.assertGreater(
-            len(result["sources"]),
-            0
+        self.assertIn(
+            "chunks",
+            result
         )
 
+        # Check answer exists
 
         self.assertGreater(
             len(result["answer"]),
             0
         )
 
+        # Check sources exist
+
+        self.assertGreater(
+            len(result["sources"]),
+            0
+        )
+
+        # Check chunks exist
+
+        self.assertGreater(
+            len(result["chunks"]),
+            0
+        )
+
+    # ==========================================
+    # EMPTY QUESTION
+    # ==========================================
 
     def test_empty_question(self):
 
-        with self.assertRaises(ValueError):
+        with self.assertRaises(
+            ValueError
+        ):
 
             self.pipeline.ask(
                 ""
             )
 
+    # ==========================================
+    # WHITESPACE QUESTION
+    # ==========================================
+
+    def test_whitespace_question(self):
+
+        with self.assertRaises(
+            ValueError
+        ):
+
+            self.pipeline.ask(
+                "   "
+            )
+
+    # ==========================================
+    # GENERAL QUERY
+    # ==========================================
 
     def test_general_query(self):
 
         result = self.pipeline.ask(
+
             "Explain the company onboarding process."
+
         )
 
-        print("\nGeneral Query Result:")
-        print(result)
+        print(
+            "\nGeneral Query Result:"
+        )
 
+        print(
+            result
+        )
 
         self.assertIn(
             "answer",
             result
         )
-
 
         self.assertGreater(
             len(result["answer"]),
@@ -78,4 +131,5 @@ class TestPipeline(unittest.TestCase):
 
 
 if __name__ == "__main__":
+
     unittest.main()

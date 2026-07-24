@@ -10,6 +10,13 @@ class BM25Retriever:
 
     Loads preprocessed document chunks from:
         data/chunks.pkl
+
+    Supports:
+        - retrieve(query, top_k)
+        - search(query, top_k)
+
+    Both methods return:
+        [(document, score), ...]
     """
 
     def __init__(
@@ -23,15 +30,12 @@ class BM25Retriever:
         # CHECK FILE
         # ==========================================
 
-        if not os.path.exists(
-            self.chunks_path
-        ):
+        if not os.path.exists(self.chunks_path):
 
             raise FileNotFoundError(
                 f"BM25 chunks file not found: "
                 f"{self.chunks_path}"
             )
-
 
         # ==========================================
         # LOAD DOCUMENTS
@@ -42,17 +46,13 @@ class BM25Retriever:
             "rb"
         ) as f:
 
-            self.documents = pickle.load(
-                f
-            )
-
+            self.documents = pickle.load(f)
 
         if not self.documents:
 
             raise ValueError(
                 "No documents found for BM25 retrieval."
             )
-
 
         # ==========================================
         # TOKENIZE DOCUMENTS
@@ -68,7 +68,6 @@ class BM25Retriever:
 
         ]
 
-
         # ==========================================
         # CREATE BM25 INDEX
         # ==========================================
@@ -76,7 +75,6 @@ class BM25Retriever:
         self.bm25 = BM25Okapi(
             self.tokenized_documents
         )
-
 
     # ==========================================
     # TOKENIZATION
@@ -86,12 +84,26 @@ class BM25Retriever:
         self,
         text: str
     ):
+        """
+        Convert text into lowercase tokens.
+
+        Example:
+
+        "Leave Policy"
+
+        becomes:
+
+        ["leave", "policy"]
+        """
+
+        if not text:
+
+            return []
 
         return (
             text.lower()
             .split()
         )
-
 
     # ==========================================
     # RETRIEVE
@@ -102,13 +114,34 @@ class BM25Retriever:
         query: str,
         top_k: int = 10
     ):
+        """
+        Retrieve the most relevant documents
+        using BM25 keyword matching.
+
+        Returns:
+
+            [(document, score), ...]
+
+        For an empty query, returns an empty list.
+        """
+
+        # ==========================================
+        # HANDLE EMPTY QUERY
+        # ==========================================
 
         if not query or not query.strip():
 
-            raise ValueError(
-                "Query cannot be empty."
-            )
+            return []
 
+        # ==========================================
+        # VALIDATE TOP_K
+        # ==========================================
+
+        if top_k <= 0:
+
+            raise ValueError(
+                "top_k must be greater than 0."
+            )
 
         # ==========================================
         # TOKENIZE QUERY
@@ -118,7 +151,6 @@ class BM25Retriever:
             query
         )
 
-
         # ==========================================
         # GET BM25 SCORES
         # ==========================================
@@ -126,7 +158,6 @@ class BM25Retriever:
         scores = self.bm25.get_scores(
             query_tokens
         )
-
 
         # ==========================================
         # RANK DOCUMENTS
@@ -144,24 +175,19 @@ class BM25Retriever:
 
         )
 
-
         # ==========================================
         # BUILD RESULTS
         # ==========================================
 
         results = []
 
-
-        for index in ranked_indices[
-            :top_k
-        ]:
+        for index in ranked_indices[:top_k]:
 
             document = (
                 self.documents[index]
             )
 
             score = scores[index]
-
 
             results.append(
 
@@ -172,5 +198,32 @@ class BM25Retriever:
 
             )
 
-
         return results
+
+    # ==========================================
+    # SEARCH
+    # ==========================================
+
+    def search(
+        self,
+        query: str,
+        top_k: int = 10
+    ):
+        """
+        Backward-compatible search method.
+
+        Older tests and modules may call:
+
+            retriever.search(query)
+
+        The main implementation uses:
+
+            retriever.retrieve(query)
+
+        Both return the same result format.
+        """
+
+        return self.retrieve(
+            query=query,
+            top_k=top_k
+        )

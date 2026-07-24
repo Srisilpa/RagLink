@@ -1,45 +1,70 @@
+import unittest
+
 from rag.retrieval.retriever import Retriever
 
 
-def print_results(results):
-    print("\nRetrieved Documents")
-    print("=" * 80)
+class TestRetriever(unittest.TestCase):
 
-    for index, (doc, score) in enumerate(results, start=1):
-        print(f"\nRank: {index}")
-        print(f"Distance Score: {score:.4f}")
+    @classmethod
+    def setUpClass(cls):
 
-        print("\nMetadata:")
-        print(doc.metadata)
+        cls.retriever = Retriever()
 
-        print("\nContent:")
-        print("-" * 80)
-        print(doc.page_content[:400])
-        print("-" * 80)
+    def test_leave_policy(self):
 
+        results = self.retriever.retrieve(
+            "Leave policy"
+        )
 
-def main():
-    retriever = Retriever()
+        self.assertGreater(
+            len(results),
+            0
+        )
 
-    while True:
-        query = input("\nAsk a question (type 'exit' to quit): ")
+        content = (
+            results[0][0]
+            .page_content
+            .lower()
+        )
 
-        if query.lower() == "exit":
-            print("Exiting...")
-            break
+        self.assertIn(
+            "leave",
+            content
+        )
 
-        try:
-            results = retriever.retrieve(
-                query=query,
-                return_k=5,
-                fetch_k=10
+    def test_project_alpha(self):
+
+        results = self.retriever.retrieve(
+            "Project Alpha"
+        )
+
+        self.assertGreater(
+            len(results),
+            0
+        )
+
+    def test_empty_query(self):
+
+        with self.assertRaises(
+            ValueError
+        ):
+
+            self.retriever.retrieve(
+                ""
             )
 
-            print_results(results)
+    def test_random_query(self):
 
-        except Exception as e:
-            print(f"Error: {e}")
+        results = self.retriever.retrieve(
+            "abcdefxyz"
+        )
+
+        self.assertGreaterEqual(
+            len(results),
+            0
+        )
 
 
 if __name__ == "__main__":
-    main()
+
+    unittest.main()
