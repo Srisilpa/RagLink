@@ -531,6 +531,7 @@ The current testing approach uses **Python unittest-based tests** and custom RAG
 * Improve query routing.
 * Expand LangGraph workflow integration.
 * Add automated RAG evaluation using dedicated evaluation frameworks.
+* Allowing multiple users to be added at once.
 
 ---
 
