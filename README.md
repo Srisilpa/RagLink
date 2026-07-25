@@ -326,26 +326,26 @@ RAGLink/
 ├── accounts/                              # User authentication, roles, and account management
 │   ├── migrations/                        # Database migrations for user/account models
 │   ├── templates/                         # Account-related HTML templates
-│   ├── __init__.py                         # Python package initializer
-│   ├── admin.py                            # Registers account models in Django Admin
-│   ├── apps.py                             # Django application configuration
-│   ├── models.py                           # Custom User model and role definitions
-│   ├── services.py                         # Account-related business logic
-│   ├── tests.py                            # Account application tests
-│   ├── urls.py                             # URL routes for account features
-│   └── views.py                            # Login, logout, and account-related views
+│   ├── __init__.py                        # Python package initializer
+│   ├── admin.py                           # Registers account models in Django Admin
+│   ├── apps.py                            # Django application configuration
+│   ├── models.py                          # Custom User model and role definitions
+│   ├── services.py                        # Account-related business logic
+│   ├── tests.py                           # Account application tests
+│   ├── urls.py                            # URL routes for account features
+│   └── views.py                           # Login, logout, and account-related views
 │
 ├── chatbot/                               # Chatbot application and RAG interaction layer
-│   ├── migrations/                         # Chatbot database migrations
-│   ├── templates/                          # Chatbot-specific HTML templates
-│   ├── __init__.py                         # Python package initializer
-│   ├── admin.py                            # Chatbot model administration
-│   ├── apps.py                             # Django chatbot app configuration
-│   ├── models.py                           # Chat and conversation data models
-│   ├── services.py                         # Connects user queries with RAG pipeline and tools
+│   ├── migrations/                        # Chatbot database migrations
+│   ├── templates/                         # Chatbot-specific HTML templates
+│   ├── __init__.py                        # Python package initializer
+│   ├── admin.py                           # Chatbot model administration
+│   ├── apps.py                            # Django chatbot app configuration
+│   ├── models.py                          # Chat and conversation data models
+│   ├── services.py                        # Connects user queries with RAG pipeline and tools
 │   ├── tests.py                            # Chatbot application tests
-│   ├── urls.py                             # Chatbot URL routes
-│   └── views.py                            # Handles chatbot requests and responses
+│   ├── urls.py                            # Chatbot URL routes
+│   └── views.py                           # Handles chatbot requests and responses
 │
 ├── chroma_db/                             # Persistent ChromaDB vector database
 │
@@ -353,69 +353,93 @@ RAGLink/
 │
 ├── data/                                  # Processed data and generated intermediate files
 │
-├── documents/                             # Document management application
+├── documents/                             # Document management Django application
+│   ├── migrations/                        # Database migrations for document models
+│   ├── __init__.py                        # Python package initializer
+│   ├── admin.py                           # Registers document models in Django Admin
+│   ├── apps.py                            # Django document app configuration
+│   ├── forms.py                           # Forms for document upload and management
+│   ├── models.py                          # Document model and file metadata
+│   ├── tests.py                           # Document management tests
+│   ├── urls.py                            # URL routes for document management
+│   └── views.py                           # Document upload, listing, and management views
 │
 ├── media/                                 # Uploaded company and project knowledge documents
-│   ├── Company/                            # Company-wide policies, HR, IT, security, and technical documents
-│   └── Projects/                           # Project-specific technical and project documentation
+│   ├── Company/                           # Company-wide policies, HR, IT, security, and technical documents
+│   └── Projects/                          # Project-specific technical and project documentation
 │
 ├── rag/                                   # Core Retrieval-Augmented Generation system
 │   │
-│   ├── evaluation/                         # RAG quality and evaluation-related components
+│   ├── cache/                             # Caching mechanisms for improving RAG performance
+│   │   ├── memory_cache.py                # In-memory caching
+│   │   └── redis_cache.py                 # Redis-based caching
 │   │
-│   ├── generation/                         # Query processing and answer generation
-│   │   ├── __init__.py                     # Python package initializer
-│   │   ├── context.py                      # Selects and builds relevant context for the LLM
-│   │   ├── generator.py                    # Handles final answer generation
-│   │   ├── llm.py                          # Groq LLM configuration and generation
-│   │   ├── prompt.py                       # Builds grounded prompts using retrieved context
-│   │   └── query_rewriter.py               # Rewrites user queries to improve retrieval
+│   ├── chunking/                          # Document chunking and text splitting
+│   │   ├── __init__.py                    # Python package initializer
+│   │   └── chunker.py                     # Splits documents into smaller chunks for retrieval
 │   │
-│   ├── ingestion/                          # Document ingestion and preprocessing pipeline
-│   │   ├── __init__.py                     # Python package initializer
-│   │   ├── ingest.py                       # Main document ingestion process
-│   │   ├── loaders.py                      # Loads PDF, DOCX, TXT, and other supported documents
-│   │   └── processor.py                    # Processes and prepares documents for indexing
+│   ├── embeddings/                        # Embedding model management
+│   │   ├── __init__.py                    # Python package initializer
+│   │   └── embedding_model.py             # Loads and manages Hugging Face embedding model
 │   │
-│   ├── langgraph/                          # LangGraph workflow foundation
-│   │   ├── __init__.py                     # Python package initializer
-│   │   ├── graph.py                        # Defines the LangGraph workflow
-│   │   ├── nodes.py                        # Defines individual workflow nodes
-│   │   └── state.py                        # Defines shared workflow state
+│   ├── evaluation/                        # RAG quality and evaluation components
 │   │
-│   ├── retrieval/                          # Hybrid document retrieval system
-│   │   ├── __init__.py                     # Python package initializer
-│   │   ├── bm25.py                         # Keyword-based sparse retrieval using BM25
-│   │   ├── hybrid.py                       # Combines semantic and BM25 retrieval using RRF
-│   │   ├── rerank.py                       # Cross-encoder reranking of retrieved documents
-│   │   └── retriever.py                    # Semantic similarity retrieval from ChromaDB
+│   ├── generation/                        # Query processing and answer generation
+│   │   ├── __init__.py                    # Python package initializer
+│   │   ├── context.py                     # Selects and builds relevant context for the LLM
+│   │   ├── generator.py                   # Handles final answer generation
+│   │   ├── llm.py                         # Groq LLM configuration and generation
+│   │   ├── prompt.py                      # Builds grounded prompts using retrieved context
+│   │   └── query_rewriter.py              # Rewrites user queries to improve retrieval
 │   │
-│   ├── tools/                              # Utility tools used by the chatbot
-│   │   ├── __init__.py                     # Python package initializer
-│   │   ├── calculator.py                   # Handles mathematical calculations
-│   │   ├── date.py                         # Handles date and time-related queries
-│   │   ├── query_router.py                 # Routes queries to RAG or appropriate tools
-│   │   └── web_search.py                   # Handles supported web search queries
+│   ├── ingestion/                         # Document ingestion and preprocessing pipeline
+│   │   ├── __init__.py                    # Python package initializer
+│   │   ├── ingest.py                      # Main document ingestion process
+│   │   ├── loaders.py                     # Loads PDF, DOCX, TXT, and other supported documents
+│   │   └── processor.py                   # Processes and prepares documents for indexing
 │   │
-│   ├── vectorstore/                        # Vector database and embedding storage
+│   ├── langgraph/                         # LangGraph workflow foundation
+│   │   ├── __init__.py                    # Python package initializer
+│   │   ├── graph.py                       # Defines the LangGraph workflow
+│   │   ├── nodes.py                       # Defines individual workflow nodes
+│   │   └── state.py                       # Defines shared workflow state
 │   │
-│   ├── config.py                           # RAG configuration and pipeline settings
-│   └── pipeline.py                         # Main RAG pipeline connecting all RAG components
+│   ├── retrieval/                         # Hybrid document retrieval system
+│   │   ├── __init__.py                    # Python package initializer
+│   │   ├── bm25.py                        # Keyword-based sparse retrieval using BM25
+│   │   ├── hybrid.py                      # Combines semantic and BM25 retrieval using RRF
+│   │   ├── rerank.py                      # Cross-encoder reranking of retrieved documents
+│   │   └── retriever.py                   # Semantic similarity retrieval from ChromaDB
+│   │
+│   ├── tools/                             # Utility tools used by the chatbot
+│   │   ├── __init__.py                    # Python package initializer
+│   │   ├── calculator.py                  # Handles mathematical calculations
+│   │   ├── date.py                        # Handles date and time-related queries
+│   │   ├── document_lookup.py             # Looks up relevant company documents
+│   │   ├── query_router.py                # Routes queries to RAG or appropriate tools
+│   │   └── web_search.py                  # Handles supported web search queries
+│   │
+│   ├── vectorstore/                       # Vector database and embedding storage
+│   │   ├── __init__.py                    # Python package initializer
+│   │   └── chroma.py                           # ChromaDB/vector store management files
+│   │
+│   ├── config.py                          # RAG configuration and pipeline settings
+│   └── pipeline.py                        # Main RAG pipeline connecting all RAG components
 │
-├── requirements/                           # Project dependency configuration
-│   └── requirements.txt                    # Python packages required to run the project
+├── requirements/                          # Project dependency configuration
+│   └── requirements.txt                   # Python packages required to run the project
 │
-├── scripts/                                # Utility and manual testing scripts
-│   ├── restore_documents.py                # Restores or reprocesses document data
-│   ├── test_bm25_manual.py                 # Manually tests BM25 retrieval
-│   ├── test_graph_manual.py                # Manually tests LangGraph workflow
-│   ├── test_hybrid_manual.py               # Manually tests hybrid retrieval
-│   ├── test_llm_manual.py                  # Manually tests LLM generation
-│   ├── test_prompt_manual.py               # Manually tests prompt construction
-│   ├── test_reranker_manual.py             # Manually tests document reranking
-│   └── test_retriever_manual.py             # Manually tests semantic retrieval
+├── scripts/                               # Utility and manual testing scripts
+│   ├── restore_documents.py               # Restores or reprocesses document data
+│   ├── test_bm25_manual.py                # Manually tests BM25 retrieval
+│   ├── test_graph_manual.py               # Manually tests LangGraph workflow
+│   ├── test_hybrid_manual.py              # Manually tests hybrid retrieval
+│   ├── test_llm_manual.py                 # Manually tests LLM generation
+│   ├── test_prompt_manual.py              # Manually tests prompt construction
+│   ├── test_reranker_manual.py            # Manually tests document reranking
+│   └── test_retriever_manual.py           # Manually tests semantic retrieval
 │
-├── templates/                              # Global Django HTML templates
+├── templates/                             # Global Django HTML templates
 │   ├── admin/                              # Admin dashboard and user management pages
 │   │   ├── add_user.html                   # Admin page for creating users
 │   │   ├── dashboard.html                  # Admin dashboard
@@ -423,10 +447,10 @@ RAGLink/
 │   │   └── reset_password.html              # Password reset interface
 │   │
 │   ├── documents/                          # Document management interface
-│   │   └── manage_documents.html            # Upload and manage knowledge documents
+│   │   └── manage_documents.html           # Upload and manage knowledge documents
 │   │
 │   ├── employee/                           # Employee interface
-│   │   └── employee_dashboard.html          # Employee dashboard with RAGLink chatbot
+│   │   └── employee_dashboard.html         # Employee dashboard with RAGLink chatbot
 │   │
 │   ├── home/                               # Home page
 │   │   └── index.html                      # Main landing page
