@@ -1,4 +1,4 @@
-# RAGLink – Enterprise AI Knowledge Assistant
+# RAGLink – Enterprise Knowledge Hub
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 ![Django](https://img.shields.io/badge/Web-Django-green)
