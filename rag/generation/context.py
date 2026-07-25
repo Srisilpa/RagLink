@@ -3,133 +3,135 @@ from typing import List, Tuple
 from langchain_core.documents import Document
 
 
-def compress_context(
+def build_context(
     ranked_documents: List[Tuple[Document, float]],
     max_chunks: int = 5,
-    min_score: float = 3.0
-) -> List[Tuple[Document, float]]:
+    min_score: float = -2.0
+):
     """
-    Select the most relevant documents after reranking.
+    Build a clean context from reranked documents.
 
-    Steps:
-    1. Validate Document objects.
-    2. Remove empty documents.
-    3. Remove duplicate content.
-    4. Remove low-score documents.
-    5. Keep at most max_chunks documents.
+    Args:
+        ranked_documents:
+            List of (Document, relevance_score) tuples.
+
+        max_chunks:
+            Maximum number of chunks to include.
+
+        min_score:
+            Minimum reranker score allowed.
+
+    Returns:
+        context:
+            String containing selected document chunks.
+
+        selected:
+            List of (Document, score) tuples.
     """
 
-    selected = []
+    if not ranked_documents:
+        return "", []
 
-    seen = set()
+    if max_chunks <= 0:
+        return "", []
+
+    # =========================================================
+    # REMOVE INVALID DOCUMENTS
+    # =========================================================
+
+    valid_documents = []
 
     for document, score in ranked_documents:
 
-        # --------------------------------
-        # Validate document
-        # --------------------------------
-
-        if not isinstance(
-            document,
-            Document
-        ):
-
+        if document is None:
             continue
 
-        content = (
-            document.page_content.strip()
-        )
+        if not document.page_content:
+            continue
+
+        content = document.page_content.strip()
 
         if not content:
-
             continue
 
-        # --------------------------------
-        # Convert score to float
-        # --------------------------------
-
-        try:
-
-            score = float(
-                score
-            )
-
-        except (
-            TypeError,
-            ValueError
-        ):
-
-            continue
-
-        # --------------------------------
-        # Remove low relevance results
-        # --------------------------------
-
-        if score < min_score:
-
-            continue
-
-        # --------------------------------
-        # Normalize content
-        # --------------------------------
-
-        normalized = (
-            " ".join(
-                content.lower().split()
+        valid_documents.append(
+            (
+                document,
+                float(score)
             )
         )
 
-        # --------------------------------
-        # Remove duplicates
-        # --------------------------------
+    if not valid_documents:
+        return "", []
 
-        if normalized in seen:
+    # =========================================================
+    # REMOVE DUPLICATE CONTENT
+    # =========================================================
 
-            continue
+    unique_documents = []
 
-        seen.add(
-            normalized
+    seen_content = set()
+
+    for document, score in valid_documents:
+
+        normalized_content = " ".join(
+            document.page_content.lower().split()
         )
 
-        # --------------------------------
-        # Add selected document
-        # --------------------------------
+        if normalized_content in seen_content:
+            continue
 
-        selected.append(
+        seen_content.add(
+            normalized_content
+        )
 
+        unique_documents.append(
             (
                 document,
                 score
             )
-
         )
 
-        # --------------------------------
-        # Maximum chunks
-        # --------------------------------
+    # =========================================================
+    # SELECT RELEVANT DOCUMENTS
+    # =========================================================
+
+    selected = []
+
+    for document, score in unique_documents:
+
+        if score < min_score:
+            continue
+
+        selected.append(
+            (
+                document,
+                score
+            )
+        )
 
         if len(selected) >= max_chunks:
-
             break
 
-    return selected
+    # =========================================================
+    # FALLBACK
+    # =========================================================
 
+    # If the threshold removed everything, use the best result.
+    # This prevents valid answers from being lost because of
+    # a strict cross-encoder score.
+    if not selected:
 
-def build_context(
-    ranked_documents: List[Tuple[Document, float]],
-    max_chunks: int = 5,
-    min_score: float = 3.0
-):
+        selected = unique_documents[
+            :min(
+                max_chunks,
+                len(unique_documents)
+            )
+        ]
 
-    selected = compress_context(
-
-        ranked_documents=ranked_documents,
-
-        max_chunks=max_chunks,
-
-        min_score=min_score
-
-    )
+    # =========================================================
+    # BUILD CONTEXT
+    # =========================================================
 
     context_parts = []
 
@@ -137,16 +139,34 @@ def build_context(
         document,
         score
     ) in enumerate(
-
         selected,
-
         start=1
-
     ):
+
+        source = document.metadata.get(
+            "source",
+            "Unknown source"
+        )
+
+        page = document.metadata.get(
+            "page"
+        )
+
+        if page is not None:
+
+            source_info = (
+                f"{source}, page {page}"
+            )
+
+        else:
+
+            source_info = source
 
         context_parts.append(
 
             f"[Context {index}]\n"
+            f"Source: {source_info}\n"
+            f"Content:\n"
             f"{document.page_content.strip()}"
 
         )
@@ -155,7 +175,9 @@ def build_context(
         context_parts
     )
 
-    return (
-        context,
-        selected
+    print(
+        f"Final Context Chunks: "
+        f"{len(selected)}"
     )
+
+    return context, selected

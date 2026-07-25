@@ -61,6 +61,127 @@ class RAGPipeline:
         )
 
     # ==========================================
+    # CLEAN ANSWER
+    # ==========================================
+
+    def clean_answer(
+        self,
+        answer: str
+    ):
+        """
+        Cleans unwanted fallback text that the LLM may
+        accidentally append to an otherwise valid answer.
+        """
+
+        if not answer:
+            return FALLBACK_ANSWER
+
+        answer = answer.strip()
+
+        # ------------------------------------------
+        # Fallback variants
+        # ------------------------------------------
+
+        fallback_variants = [
+
+            "I couldn't find that information "
+            "in the company knowledge base.",
+
+            "I could not find that information "
+            "in the company knowledge base.",
+
+            "I couldn't find that information "
+            "in the company knowledge base",
+
+            "I could not find that information "
+            "in the company knowledge base"
+
+        ]
+
+        # ------------------------------------------
+        # Check whether the answer contains fallback
+        # ------------------------------------------
+
+        answer_lower = answer.lower()
+
+        for fallback in fallback_variants:
+
+            fallback_lower = fallback.lower()
+
+            if fallback_lower in answer_lower:
+
+                # ----------------------------------
+                # Find fallback position
+                # ----------------------------------
+
+                fallback_position = (
+                    answer_lower.find(
+                        fallback_lower
+                    )
+                )
+
+                # ----------------------------------
+                # Text before fallback
+                # ----------------------------------
+
+                before_fallback = (
+                    answer[
+                        :fallback_position
+                    ].strip()
+                )
+
+                # ----------------------------------
+                # If meaningful answer exists,
+                # remove the appended fallback.
+                # ----------------------------------
+
+                if before_fallback:
+
+                    answer = before_fallback
+
+                else:
+
+                    answer = FALLBACK_ANSWER
+
+                break
+
+        # ==========================================
+        # REMOVE UNNECESSARY PREFIXES
+        # ==========================================
+
+        unwanted_prefixes = [
+
+            "ANSWER:",
+
+            "Answer:",
+
+            "ANSWER :",
+
+            "Answer :"
+
+        ]
+
+        for prefix in unwanted_prefixes:
+
+            if answer.startswith(prefix):
+
+                answer = answer[
+                    len(prefix):
+                ].strip()
+
+                break
+
+        # ==========================================
+        # FINAL FALLBACK
+        # ==========================================
+
+        if not answer:
+
+            return FALLBACK_ANSWER
+
+        return answer
+
+    # ==========================================
     # ASK
     # ==========================================
 
@@ -108,7 +229,11 @@ class RAGPipeline:
         # ==========================================
 
         retrieved = self.hybrid.search(
-            rewritten_question
+
+            rewritten_question,
+
+            top_k=15
+
         )
 
         print(
@@ -124,6 +249,7 @@ class RAGPipeline:
             document
 
             for document, score
+
             in retrieved
 
         ]
@@ -156,9 +282,9 @@ class RAGPipeline:
 
         reranked = self.reranker.rerank(
 
-            rewritten_question,
+            query=rewritten_question,
 
-            documents,
+            documents=documents,
 
             top_k=10
 
@@ -183,7 +309,8 @@ class RAGPipeline:
         )
 
         print(
-            f"Compressed: {len(selected)}"
+            f"Final Context Chunks: "
+            f"{len(selected)}"
         )
 
         # ==========================================
@@ -229,42 +356,12 @@ class RAGPipeline:
         )
 
         # ==========================================
-        # 10. SAFETY FALLBACK
+        # 10. CLEAN ANSWER
         # ==========================================
 
-        normalized_answer = (
-
+        answer = self.clean_answer(
             answer
-            .strip()
-            .lower()
-
         )
-
-        fallback_phrases = [
-
-            "the answer is not explicitly stated",
-
-            "not explicitly stated in the provided context",
-
-            "the context does not specify",
-
-            "the provided context does not specify",
-
-            "i don't have enough information",
-
-            "based on the provided context, the answer",
-
-            "the information is not available"
-
-        ]
-
-        for phrase in fallback_phrases:
-
-            if phrase in normalized_answer:
-
-                answer = FALLBACK_ANSWER
-
-                break
 
         # ==========================================
         # 11. PREPARE CHUNKS AND SOURCES
@@ -276,17 +373,25 @@ class RAGPipeline:
 
         for document, score in selected:
 
+            # --------------------------------------
+            # SOURCE
+            # --------------------------------------
+
             source = document.metadata.get(
                 "source"
             )
+
+            # --------------------------------------
+            # PAGE
+            # --------------------------------------
 
             page = document.metadata.get(
                 "page"
             )
 
-            # ------------------------------
+            # --------------------------------------
             # PREPARE CHUNK
-            # ------------------------------
+            # --------------------------------------
 
             chunks.append(
 
@@ -311,11 +416,19 @@ class RAGPipeline:
 
             )
 
-            # ------------------------------
+            # --------------------------------------
             # ADD UNIQUE SOURCE
-            # ------------------------------
+            # --------------------------------------
 
-            if source and source not in sources:
+            if (
+
+                source
+
+                and
+
+                source not in sources
+
+            ):
 
                 sources.append(
                     source

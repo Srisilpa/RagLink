@@ -9,31 +9,16 @@ from rag.vectorstore.chroma import (
 
 class Retriever:
     """
-    Semantic retriever using ChromaDB.
+    Semantic Retriever using ChromaDB.
 
-    Retrieves documents based on semantic similarity
-    between the query and indexed document chunks.
-
-    API:
-
-        retriever = Retriever()
-
-        results = retriever.retrieve(
-            query="Leave policy",
-            return_k=5,
-            fetch_k=10
-        )
-
-    Returns:
-
-        [(document, score), ...]
-
+    Retrieves a larger candidate set so that
+    the reranker has enough documents to choose from.
     """
 
     def __init__(self):
 
         # ==========================================
-        # LOAD EMBEDDING MODEL
+        # EMBEDDING MODEL
         # ==========================================
 
         self.embedding_model = (
@@ -41,7 +26,7 @@ class Retriever:
         )
 
         # ==========================================
-        # LOAD VECTOR STORE
+        # VECTOR STORE
         # ==========================================
 
         self.vectorstore = (
@@ -57,36 +42,9 @@ class Retriever:
     def retrieve(
         self,
         query: str,
-        return_k: int = 10,
-        fetch_k: int = 10
+        return_k: int = 20,
+        fetch_k: int = 20
     ):
-        """
-        Retrieve semantically similar documents.
-
-        Args:
-            query:
-                User's search query.
-
-            return_k:
-                Number of documents returned
-                to the caller.
-
-            fetch_k:
-                Number of documents initially
-                fetched from ChromaDB.
-
-        Returns:
-            List of:
-
-                [(document, score), ...]
-
-        Raises:
-            ValueError:
-                If query is empty.
-
-            ValueError:
-                If return_k or fetch_k is invalid.
-        """
 
         # ==========================================
         # VALIDATE QUERY
@@ -99,7 +57,7 @@ class Retriever:
             )
 
         # ==========================================
-        # VALIDATE RETURN_K
+        # VALIDATE K
         # ==========================================
 
         if return_k <= 0:
@@ -108,10 +66,6 @@ class Retriever:
                 "return_k must be greater than 0."
             )
 
-        # ==========================================
-        # VALIDATE FETCH_K
-        # ==========================================
-
         if fetch_k <= 0:
 
             raise ValueError(
@@ -119,7 +73,7 @@ class Retriever:
             )
 
         # ==========================================
-        # ENSURE FETCH_K >= RETURN_K
+        # ENSURE FETCH >= RETURN
         # ==========================================
 
         if fetch_k < return_k:
@@ -144,10 +98,12 @@ class Retriever:
         )
 
         # ==========================================
-        # RETURN TOP RESULTS
+        # RETURN
         # ==========================================
 
-        return results[:return_k]
+        return results[
+            :return_k
+        ]
 
 
 # ==============================================

@@ -1,103 +1,81 @@
 def build_prompt(
     question: str,
     context: str
-) -> str:
+):
+    """
+    Build a strict RAG prompt.
 
-    return f"""
-You are RAGLink, an enterprise knowledge assistant for Series Tech Limited.
+    The LLM must answer only from the retrieved
+    company knowledge-base context.
+    """
 
-Your job is to answer the USER QUESTION using ONLY the information contained in the CONTEXT.
+    if not question or not question.strip():
+        raise ValueError(
+            "Question cannot be empty."
+        )
 
-========================
-STRICT ANSWERING RULES
-========================
+    if not context or not context.strip():
+        raise ValueError(
+            "Context cannot be empty."
+        )
 
-1. Use ONLY the provided CONTEXT.
+    prompt = f"""
+You are RAGLink AI Assistant, an enterprise knowledge-base
+assistant for Series Tech Limited.
 
-2. Do NOT use outside knowledge or your own general knowledge.
+Your task is to answer the user's question using ONLY the
+information available in the provided company knowledge-base context.
 
-3. Do NOT invent, assume, estimate, or guess any information.
+USER QUESTION:
+{question}
 
-4. Answer ONLY what the user asked.
+KNOWLEDGE BASE CONTEXT:
+{context}
 
-5. Ignore context that is unrelated to the question.
+STRICT INSTRUCTIONS:
 
-6. If the answer is clearly present in the CONTEXT, answer directly and concisely.
+1. Answer the user's question directly and clearly.
 
-7. If the CONTEXT contains a direct Question/Answer pair that answers the user's question, prefer that answer.
+2. Use ONLY information found in the knowledge-base context.
 
-8. If the question asks for a specific value such as:
-   - number
-   - date
-   - duration
-   - salary
-   - price
-   - technology
-   - database
-   - architecture
-   - approval authority
-   - SLA
+3. Do NOT use outside knowledge.
 
-   return the exact value from the CONTEXT.
+4. Do NOT guess, assume, or invent information.
 
-9. Do not combine unrelated information from different context sections.
+5. If the answer is clearly available in the context,
+   provide the answer confidently.
 
-10. Do not confuse similar policies or workflows.
+6. If multiple relevant pieces of information are available,
+   combine them into one concise and accurate answer.
 
-For example:
+7. If the user asks multiple questions, answer every part
+   that can be answered from the context.
 
-- Leave approval is different from permanent remote work approval.
-- Leave approval is different from leave cancellation.
-- Leave approval is different from internal transfer approval.
-- Leave approval is different from approval for other employee requests.
+8. Do not mention context numbers such as "Context 1" or
+   "Context 2" in your answer.
 
-11. If multiple context sections are relevant, combine ONLY the information directly related to the question.
+9. Do not mention retrieval, documents, chunks, or the
+   internal RAG process.
 
-12. If the context contains conflicting information, prefer:
-    a. A direct Question/Answer pair.
-    b. A more specific policy.
-    c. The most directly relevant information.
+10. Do not repeat the user's question.
 
-13. Do not mention:
-    - context
-    - chunks
-    - retrieval
-    - reranking
-    - embeddings
-    - vector database
-    - internal system details
+11. Do not provide unrelated information.
 
-14. Keep answers concise unless the question requires an explanation.
+12. Do not say "the answer is not explicitly stated" when
+    the answer can be directly obtained from the context.
 
-15. IMPORTANT:
-    If the CONTEXT does not clearly contain the answer, you MUST return EXACTLY:
+13. Do not append the fallback message to an otherwise
+    valid answer.
+
+14. If the requested information is genuinely unavailable
+    in the provided context, respond EXACTLY with:
 
 I couldn't find that information in the company knowledge base.
 
-Do NOT write:
-- "The answer is not explicitly stated."
-- "The context does not specify."
-- "I don't have enough information."
-- "Based on the provided context..."
-- Any other variation of the fallback message.
+15. Keep answers concise but provide enough detail to fully
+    answer the user's question.
 
-16. A question is considered unanswered if the CONTEXT only contains related or partially related information but does not directly answer the question.
-
-17. Never answer an unrelated question using a related context section.
-
-========================
-USER QUESTION
-========================
-
-{question}
-
-========================
-CONTEXT
-========================
-
-{context}
-
-========================
-FINAL ANSWER
-========================
+ANSWER:
 """
+
+    return prompt

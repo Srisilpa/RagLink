@@ -9,15 +9,15 @@ from rag.retrieval.bm25 import (
 
 class HybridRetriever:
     """
-    Combines:
+    Hybrid retrieval system combining:
 
         Semantic Retrieval
-              +
-        BM25 Retrieval
-              ↓
-        Reciprocal Rank Fusion
-              ↓
-        Hybrid Results
+                +
+        BM25 Keyword Retrieval
+                ↓
+        Reciprocal Rank Fusion (RRF)
+                ↓
+        Top-K Hybrid Results
     """
 
     def __init__(
@@ -29,26 +29,19 @@ class HybridRetriever:
         # SEMANTIC RETRIEVER
         # ==========================================
 
-        self.semantic = (
-            SemanticRetriever()
-        )
-
+        self.semantic = SemanticRetriever()
 
         # ==========================================
         # BM25 RETRIEVER
         # ==========================================
 
-        self.bm25 = (
-            BM25Retriever()
-        )
-
+        self.bm25 = BM25Retriever()
 
         # ==========================================
         # RRF CONSTANT
         # ==========================================
 
         self.rrf_k = rrf_k
-
 
     # ==============================================
     # SEARCH
@@ -57,8 +50,23 @@ class HybridRetriever:
     def search(
         self,
         query: str,
-        top_k: int = 10
+        top_k: int = 15
     ):
+        """
+        Perform hybrid retrieval.
+
+        Semantic retrieval and BM25 retrieval each
+        retrieve a larger candidate pool.
+
+        Results are combined using Reciprocal Rank Fusion.
+
+        Returns:
+            List of (Document, RRF score)
+        """
+
+        # ==========================================
+        # VALIDATE QUERY
+        # ==========================================
 
         if not query or not query.strip():
 
@@ -66,6 +74,27 @@ class HybridRetriever:
                 "Query cannot be empty."
             )
 
+        # ==========================================
+        # VALIDATE TOP_K
+        # ==========================================
+
+        if top_k <= 0:
+
+            raise ValueError(
+                "top_k must be greater than 0."
+            )
+
+        # ==========================================
+        # CANDIDATE POOL
+        # ==========================================
+
+        # Retrieve more documents from both systems
+        # before applying RRF fusion.
+
+        candidate_k = max(
+            top_k,
+            20
+        )
 
         # ==========================================
         # SEMANTIC SEARCH
@@ -77,12 +106,18 @@ class HybridRetriever:
 
                 query=query,
 
-                fetch_k=top_k
+                return_k=candidate_k,
+
+                fetch_k=candidate_k
 
             )
 
         )
 
+        print(
+            f"Semantic Results: "
+            f"{len(semantic_results)}"
+        )
 
         # ==========================================
         # BM25 SEARCH
@@ -94,18 +129,22 @@ class HybridRetriever:
 
                 query=query,
 
-                top_k=top_k
+                top_k=candidate_k
 
             )
 
         )
 
+        print(
+            f"BM25 Results: "
+            f"{len(bm25_results)}"
+        )
 
         # ==========================================
         # RRF FUSION
         # ==========================================
 
-        return self.fuse(
+        fused_results = self.fuse(
 
             semantic_results,
 
@@ -115,6 +154,7 @@ class HybridRetriever:
 
         )
 
+        return fused_results
 
     # ==============================================
     # RRF FUSION
@@ -124,16 +164,19 @@ class HybridRetriever:
         self,
         semantic_results,
         bm25_results,
-        top_k=10
+        top_k=15
     ):
+        """
+        Combine semantic and BM25 results using
+        Reciprocal Rank Fusion.
+        """
 
         scores = {}
 
         documents = {}
 
-
         # ==========================================
-        # SEMANTIC RESULTS
+        # PROCESS SEMANTIC RESULTS
         # ==========================================
 
         for rank, (
@@ -147,13 +190,24 @@ class HybridRetriever:
 
         ):
 
+            # --------------------------------------
+            # Use content as document identity
+            # --------------------------------------
+
             key = (
-                doc.page_content.strip()
+                doc.page_content
+                .strip()
             )
 
+            # --------------------------------------
+            # Store document
+            # --------------------------------------
 
             documents[key] = doc
 
+            # --------------------------------------
+            # RRF score
+            # --------------------------------------
 
             scores[key] = (
 
@@ -164,7 +218,7 @@ class HybridRetriever:
 
                 +
 
-                1
+                1.0
                 /
                 (
                     self.rrf_k
@@ -174,9 +228,8 @@ class HybridRetriever:
 
             )
 
-
         # ==========================================
-        # BM25 RESULTS
+        # PROCESS BM25 RESULTS
         # ==========================================
 
         for rank, (
@@ -190,13 +243,24 @@ class HybridRetriever:
 
         ):
 
+            # --------------------------------------
+            # Use content as document identity
+            # --------------------------------------
+
             key = (
-                doc.page_content.strip()
+                doc.page_content
+                .strip()
             )
 
+            # --------------------------------------
+            # Store document
+            # --------------------------------------
 
             documents[key] = doc
 
+            # --------------------------------------
+            # RRF score
+            # --------------------------------------
 
             scores[key] = (
 
@@ -207,7 +271,7 @@ class HybridRetriever:
 
                 +
 
-                1
+                1.0
                 /
                 (
                     self.rrf_k
@@ -217,7 +281,6 @@ class HybridRetriever:
 
             )
 
-
         # ==========================================
         # SORT BY RRF SCORE
         # ==========================================
@@ -226,12 +289,12 @@ class HybridRetriever:
 
             scores.items(),
 
-            key=lambda x: x[1],
+            key=lambda item:
+                item[1],
 
             reverse=True
 
         )
-
 
         # ==========================================
         # RETURN TOP RESULTS
