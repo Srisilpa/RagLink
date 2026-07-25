@@ -10,165 +10,142 @@
 <style>
 
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,Helvetica,sans-serif;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
 }
 
 body{
-background:#f4f6f9;
-display:flex;
-flex-direction:column;
-height:100vh;
+    background:#f4f6f9;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
 }
 
+/* Header */
+
 .header{
-
-background:white;
-padding:18px 50px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 2px 10px rgba(0,0,0,.08);
-
+    background:white;
+    padding:18px 50px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.08);
 }
 
 .logo{
-
-font-size:32px;
-font-weight:bold;
-color:#1e3a8a;
-
+    font-size:32px;
+    font-weight:bold;
+    color:#1e3a8a;
 }
 
 .user{
-
-font-size:17px;
-
+    font-size:17px;
 }
 
 .logout{
-
-text-decoration:none;
-margin-left:20px;
-background:#dc3545;
-padding:10px 18px;
-border-radius:8px;
-color:white;
-
+    text-decoration:none;
+    margin-left:20px;
+    background:#dc3545;
+    padding:10px 18px;
+    border-radius:8px;
+    color:white;
 }
 
 .logout:hover{
-
-background:#bb2d3b;
-
+    background:#bb2d3b;
 }
+
+/* Chat Container */
 
 .chat-container{
-
-width:90%;
-max-width:1100px;
-margin:30px auto;
-background:white;
-border-radius:15px;
-box-shadow:0 5px 18px rgba(0,0,0,.1);
-display:flex;
-flex-direction:column;
-height:78vh;
-
+    width:90%;
+    max-width:1100px;
+    margin:30px auto;
+    background:white;
+    border-radius:15px;
+    box-shadow:0 5px 18px rgba(0,0,0,.1);
+    display:flex;
+    flex-direction:column;
+    height:78vh;
 }
+
+/* Chat Box */
 
 .chat-box{
-
-flex:1;
-overflow-y:auto;
-padding:25px;
-
+    flex:1;
+    overflow-y:auto;
+    padding:25px;
 }
 
+/* Messages */
+
 .message{
-
-margin-bottom:18px;
-padding:16px;
-border-radius:12px;
-max-width:75%;
-line-height:1.6;
-
+    margin-bottom:18px;
+    padding:16px;
+    border-radius:12px;
+    max-width:75%;
+    line-height:1.6;
 }
 
 .bot{
-
-background:#edf3ff;
-color:#1e3a8a;
-
+    background:#edf3ff;
+    color:#1e3a8a;
 }
 
 .user-msg{
-
-background:#1e3a8a;
-color:white;
-margin-left:auto;
-
+    background:#1e3a8a;
+    color:white;
+    margin-left:auto;
 }
 
-.sources{
-
-margin-top:15px;
-padding-top:10px;
-border-top:1px solid #dcdcdc;
-font-size:14px;
-
-}
-
-.sources ul{
-
-margin-top:8px;
-padding-left:18px;
-
-}
+/* Chat Input */
 
 .chat-input{
-
-display:flex;
-padding:20px;
-border-top:1px solid #ddd;
-
+    display:flex;
+    padding:20px;
+    border-top:1px solid #ddd;
 }
 
 .chat-input input{
+    flex:1;
+    padding:15px;
+    font-size:16px;
+    border-radius:10px;
+    border:1px solid #ccc;
+    outline:none;
+}
 
-flex:1;
-padding:15px;
-font-size:16px;
-border-radius:10px;
-border:1px solid #ccc;
-
+.chat-input input:focus{
+    border-color:#1e3a8a;
 }
 
 .chat-input button{
-
-margin-left:15px;
-padding:15px 28px;
-background:#1e3a8a;
-color:white;
-border:none;
-border-radius:10px;
-cursor:pointer;
-
+    margin-left:15px;
+    padding:15px 28px;
+    background:#1e3a8a;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:16px;
 }
 
 .chat-input button:hover{
-
-background:#173074;
-
+    background:#173074;
 }
 
+.chat-input button:disabled{
+    background:#888;
+    cursor:not-allowed;
+}
+
+/* Loading */
+
 .loading{
-
-font-style:italic;
-color:#666;
-
+    font-style:italic;
+    color:#666;
 }
 
 </style>
@@ -177,190 +154,320 @@ color:#666;
 
 <body>
 
+<!-- Header -->
+
 <div class="header">
 
-<div class="logo">
+    <div class="logo">
+        RAGLink
+    </div>
 
-RAGLink
+    <div class="user">
 
-</div>
+        Welcome
 
-<div class="user">
+        <b>{{ request.user.username }}</b>
 
-Welcome
+        <a href="{% url 'logout' %}" class="logout">
+            Logout
+        </a>
 
-<b>{{ request.user.username }}</b>
-
-<a href="{% url 'logout' %}" class="logout">
-
-Logout
-
-</a>
+    </div>
 
 </div>
 
-</div>
+
+<!-- Chat Container -->
 
 <div class="chat-container">
 
-<div class="chat-box" id="chatBox">
+    <!-- Chat Messages -->
 
-<div class="message bot">
+    <div class="chat-box" id="chatBox">
 
-<b>👋 Welcome to RAGLink AI Assistant</b>
+        <div class="message bot">
 
-<br><br>
+            <b>👋 Welcome to RAGLink AI Assistant</b>
 
-Ask me anything related to
+            <br><br>
 
-<ul>
+            Ask me anything related to
 
-<li>Company Policies</li>
+            <ul>
 
-<li>HR Documents</li>
+                <li>Company Policies</li>
 
-<li>Projects</li>
+                <li>HR Documents</li>
 
-<li>Technical Documents</li>
+                <li>Projects</li>
 
-<li>Knowledge Base</li>
+                <li>Technical Documents</li>
 
-</ul>
+                <li>Knowledge Base</li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+
+    <!-- Input -->
+
+    <div class="chat-input">
+
+        <input
+            type="text"
+            id="question"
+            placeholder="Ask your question..."
+            autocomplete="off"
+        >
+
+        <button
+            id="sendButton"
+            onclick="sendMessage()"
+        >
+            Send
+        </button>
+
+    </div>
 
 </div>
 
-</div>
-
-<div class="chat-input">
-
-<input
-type="text"
-id="question"
-placeholder="Ask your question..."
-autocomplete="off"
->
-
-<button onclick="sendMessage()">
-
-Send
-
-</button>
-
-</div>
-
-</div>
 
 <script>
 
 async function sendMessage(){
 
-const input=document.getElementById("question");
+    const input = document.getElementById("question");
+    const sendButton = document.getElementById("sendButton");
+    const question = input.value.trim();
 
-const question=input.value.trim();
+    // Do nothing if input is empty
+    if(question === ""){
+        return;
+    }
 
-if(question==="") return;
+    const chat = document.getElementById("chatBox");
 
-const chat=document.getElementById("chatBox");
 
-chat.innerHTML+=`
+    // Display user's question
 
-<div class="message user-msg">
+    chat.innerHTML += `
 
-${question}
+        <div class="message user-msg">
 
-</div>
+            ${escapeHTML(question)}
 
-`;
+        </div>
 
-chat.innerHTML+=`
+    `;
 
-<div class="message bot loading" id="loading">
 
-Thinking...
+    // Display loading message
 
-</div>
+    const loadingMessage = document.createElement("div");
 
-`;
+    loadingMessage.className = "message bot loading";
 
-chat.scrollTop=chat.scrollHeight;
+    loadingMessage.id = "loading";
 
-input.value="";
+    loadingMessage.innerText = "Thinking...";
 
-try{
+    chat.appendChild(loadingMessage);
 
-const response=await fetch("/chatbot/chat/",{
 
-method:"POST",
+    // Scroll to bottom
 
-headers:{
+    chat.scrollTop = chat.scrollHeight;
 
-"Content-Type":"application/json"
 
-},
+    // Clear input
 
-body:JSON.stringify({
+    input.value = "";
 
-message:question
 
-})
+    // Disable send button
 
-});
+    sendButton.disabled = true;
 
-const data=await response.json();
 
-document.getElementById("loading").remove();
+    try{
 
-let sources="";
+        // Send request to Django backend
 
-if(data.sources && data.sources.length){
+        const response = await fetch("/chatbot/chat/", {
 
-sources="<div class='sources'><b>Sources</b><ul>";
+            method: "POST",
 
-data.sources.forEach(function(item){
+            headers: {
 
-sources+=`<li>${item.file}</li>`;
+                "Content-Type": "application/json"
 
-});
+            },
 
-sources+="</ul></div>";
+            body: JSON.stringify({
+
+                message: question
+
+            })
+
+        });
+
+
+        // Check HTTP response
+
+        if(!response.ok){
+
+            throw new Error(
+                "Server returned status " + response.status
+            );
+
+        }
+
+
+        // Convert response to JSON
+
+        const data = await response.json();
+
+
+        // Remove loading message
+
+        const loading = document.getElementById("loading");
+
+        if(loading){
+
+            loading.remove();
+
+        }
+
+
+        // Get answer from backend
+
+        const answer = data.answer || 
+            "Sorry, I couldn't generate an answer.";
+
+
+        // Display answer only
+        // Sources are intentionally not displayed
+
+        chat.innerHTML += `
+
+            <div class="message bot">
+
+                ${formatAnswer(answer)}
+
+            </div>
+
+        `;
+
+
+        // Scroll to bottom
+
+        chat.scrollTop = chat.scrollHeight;
+
+
+    }
+
+    catch(error){
+
+        console.error("Chat error:", error);
+
+
+        // Remove loading message
+
+        const loading = document.getElementById("loading");
+
+        if(loading){
+
+            loading.remove();
+
+        }
+
+
+        // Display error message
+
+        chat.innerHTML += `
+
+            <div class="message bot">
+
+                Unable to contact the server.
+                Please try again.
+
+            </div>
+
+        `;
+
+
+        chat.scrollTop = chat.scrollHeight;
+
+    }
+
+    finally{
+
+        // Enable send button
+
+        sendButton.disabled = false;
+
+        // Focus input
+
+        input.focus();
+
+    }
 
 }
 
-chat.innerHTML+=`
 
-<div class="message bot">
+/*
+    Convert plain text into safe HTML.
 
-${data.answer}
+    This prevents user input from being
+    interpreted as HTML or JavaScript.
+*/
 
-${sources}
+function escapeHTML(text){
 
-</div>
+    const div = document.createElement("div");
 
-`;
+    div.textContent = text;
 
-chat.scrollTop=chat.scrollHeight;
-
-}
-
-catch(e){
-
-document.getElementById("loading").innerHTML="Unable to contact server.";
+    return div.innerHTML;
 
 }
 
+
+/*
+    Format the answer returned by the backend.
+
+    New lines are converted into <br>
+    so that the answer is displayed properly.
+*/
+
+function formatAnswer(text){
+
+    return escapeHTML(text)
+        .replace(/\n/g, "<br>");
+
 }
 
-document.getElementById("question").addEventListener("keypress",function(e){
 
-if(e.key==="Enter"){
+/*
+    Press Enter to send the message.
+*/
 
-e.preventDefault();
+document
+    .getElementById("question")
+    .addEventListener("keypress", function(e){
 
-sendMessage();
+        if(e.key === "Enter"){
 
-}
+            e.preventDefault();
 
-});
+            sendMessage();
+
+        }
+
+    });
 
 </script>
 
