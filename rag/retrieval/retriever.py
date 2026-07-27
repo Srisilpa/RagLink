@@ -11,8 +11,20 @@ class Retriever:
     """
     Semantic Retriever using ChromaDB.
 
-    Retrieves a larger candidate set so that
-    the reranker has enough documents to choose from.
+    Supports optional metadata filtering.
+
+    Example:
+
+        retriever.retrieve(
+            query="What is Project Meridian?",
+            return_k=20,
+            filters={
+                "document_type": "project"
+            }
+        )
+
+    The metadata filter is applied directly
+    by ChromaDB before returning results.
     """
 
     def __init__(self):
@@ -43,8 +55,36 @@ class Retriever:
         self,
         query: str,
         return_k: int = 20,
-        fetch_k: int = 20
+        fetch_k: int = 20,
+        filters: dict = None
     ):
+        """
+        Retrieve semantically relevant documents.
+
+        Parameters
+        ----------
+        query : str
+            Search query.
+
+        return_k : int
+            Number of documents returned.
+
+        fetch_k : int
+            Number of documents fetched from ChromaDB.
+
+        filters : dict, optional
+            Metadata filters.
+
+        Example:
+
+            {
+                "document_type": "project"
+            }
+
+        Returns
+        -------
+        List[Tuple[Document, float]]
+        """
 
         # ==========================================
         # VALIDATE QUERY
@@ -57,7 +97,7 @@ class Retriever:
             )
 
         # ==========================================
-        # VALIDATE K
+        # VALIDATE RETURN K
         # ==========================================
 
         if return_k <= 0:
@@ -65,6 +105,10 @@ class Retriever:
             raise ValueError(
                 "return_k must be greater than 0."
             )
+
+        # ==========================================
+        # VALIDATE FETCH K
+        # ==========================================
 
         if fetch_k <= 0:
 
@@ -81,24 +125,71 @@ class Retriever:
             fetch_k = return_k
 
         # ==========================================
+        # CLEAN FILTERS
+        # ==========================================
+
+        if filters is not None:
+
+            if not isinstance(
+                filters,
+                dict
+            ):
+
+                raise ValueError(
+                    "filters must be a dictionary."
+                )
+
+            # Remove empty filter values
+            filters = {
+
+                key: value
+
+                for key, value
+                in filters.items()
+
+                if value is not None
+                and value != ""
+
+            }
+
+        # ==========================================
         # SEMANTIC SEARCH
         # ==========================================
 
-        results = (
+        if filters:
 
-            self.vectorstore
-            .similarity_search_with_score(
+            results = (
 
-                query=query,
+                self.vectorstore
+                .similarity_search_with_score(
 
-                k=fetch_k
+                    query=query,
+
+                    k=fetch_k,
+
+                    filter=filters
+
+                )
 
             )
 
-        )
+        else:
+
+            results = (
+
+                self.vectorstore
+                .similarity_search_with_score(
+
+                    query=query,
+
+                    k=fetch_k
+
+                )
+
+            )
 
         # ==========================================
-        # RETURN
+        # RETURN TOP RESULTS
         # ==========================================
 
         return results[

@@ -9,15 +9,25 @@ class Reranker:
     """
     Cross-encoder document reranker.
 
-    Takes hybrid retrieval results and reorders
-    them according to query-document relevance.
+    Takes documents returned by the hybrid retriever
+    and reorders them based on query-document relevance.
 
-    Returns:
+    Input can be:
+
+        Document
+
+    or:
+
+        (Document, retrieval_score)
+
+    Output:
 
         [
-            (Document, relevance_score),
+            (Document, rerank_score),
             ...
         ]
+
+    The rerank_score is produced by the CrossEncoder.
     """
 
     def __init__(
@@ -27,24 +37,63 @@ class Reranker:
         )
     ):
 
-        self.model_name = (
-            model_name
-        )
+        # ==========================================
+        # MODEL NAME
+        # ==========================================
+
+        self.model_name = model_name
+
+        # ==========================================
+        # LOAD CROSS ENCODER
+        # ==========================================
 
         self.model = CrossEncoder(
             self.model_name
         )
 
     # ==========================================
-    # RERANK
+    # RERANK DOCUMENTS
     # ==========================================
 
     def rerank(
         self,
         query: str,
         documents: list,
-        top_k: int = 10
+        top_k: int = 5
     ) -> List[Tuple[Document, float]]:
+        """
+        Rerank documents using a CrossEncoder.
+
+        Parameters
+        ----------
+        query : str
+            User query or rewritten query.
+
+        documents : list
+            List containing either:
+
+                Document
+
+            or:
+
+                (Document, retrieval_score)
+
+        top_k : int
+            Number of documents to return
+            after reranking.
+
+        Returns
+        -------
+        List[Tuple[Document, float]]
+
+            Example:
+
+            [
+                (document1, 8.52),
+                (document2, 7.91),
+                (document3, 6.84)
+            ]
+        """
 
         # ==========================================
         # VALIDATE QUERY
@@ -66,6 +115,10 @@ class Reranker:
                 "Documents cannot be None."
             )
 
+        # ==========================================
+        # EMPTY DOCUMENT LIST
+        # ==========================================
+
         if not documents:
 
             return []
@@ -81,7 +134,7 @@ class Reranker:
             )
 
         # ==========================================
-        # REMOVE DUPLICATES
+        # EXTRACT AND VALIDATE DOCUMENTS
         # ==========================================
 
         valid_documents = []
@@ -91,13 +144,11 @@ class Reranker:
         for item in documents:
 
             # --------------------------------------
-            # Support both:
+            # SUPPORT BOTH FORMATS
             #
-            # Document
+            # 1. Document
             #
-            # and:
-            #
-            # (Document, score)
+            # 2. (Document, score)
             # --------------------------------------
 
             if isinstance(
@@ -107,12 +158,22 @@ class Reranker:
 
                 document = item[0]
 
+                # Original retrieval score
+                # from Hybrid Retriever
+                retrieval_score = (
+                    item[1]
+                    if len(item) > 1
+                    else None
+                )
+
             else:
 
                 document = item
 
+                retrieval_score = None
+
             # --------------------------------------
-            # Validate document
+            # CHECK DOCUMENT TYPE
             # --------------------------------------
 
             if not isinstance(
@@ -121,6 +182,10 @@ class Reranker:
             ):
 
                 continue
+
+            # --------------------------------------
+            # CHECK PAGE CONTENT
+            # --------------------------------------
 
             if not document.page_content:
 
@@ -136,13 +201,19 @@ class Reranker:
                 continue
 
             # --------------------------------------
-            # Deduplicate
+            # GET METADATA
             # --------------------------------------
 
             metadata = (
                 document.metadata
                 or {}
             )
+
+            # --------------------------------------
+            # DOCUMENT IDENTITY
+            #
+            # Used to remove duplicate chunks.
+            # --------------------------------------
 
             key = (
 
@@ -160,6 +231,10 @@ class Reranker:
 
             )
 
+            # --------------------------------------
+            # SKIP DUPLICATES
+            # --------------------------------------
+
             if key in seen:
 
                 continue
@@ -168,12 +243,35 @@ class Reranker:
                 key
             )
 
+            # --------------------------------------
+            # STORE ORIGINAL RETRIEVAL SCORE
+            #
+            # For example:
+            #
+            # RRF score
+            #
+            # This is useful for debugging
+            # and observability.
+            # --------------------------------------
+
+            if retrieval_score is not None:
+
+                document.metadata[
+                    "retrieval_score"
+                ] = float(
+                    retrieval_score
+                )
+
+            # --------------------------------------
+            # ADD VALID DOCUMENT
+            # --------------------------------------
+
             valid_documents.append(
                 document
             )
 
         # ==========================================
-        # NO VALID DOCUMENTS
+        # CHECK IF VALID DOCUMENTS EXIST
         # ==========================================
 
         if not valid_documents:
@@ -187,21 +285,17 @@ class Reranker:
         pairs = [
 
             (
-
                 query,
-
                 document.page_content
-
             )
 
             for document
-
             in valid_documents
 
         ]
 
         # ==========================================
-        # CROSS ENCODER
+        # CROSS ENCODER PREDICTION
         # ==========================================
 
         scores = self.model.predict(
@@ -213,33 +307,52 @@ class Reranker:
         )
 
         # ==========================================
-        # COMBINE SCORES
+        # CREATE SCORED DOCUMENT LIST
         # ==========================================
 
-        scored_documents = [
+        scored_documents = []
 
-            (
+        for document, score in zip(
 
-                document,
+            valid_documents,
 
-                float(score)
+            scores
+
+        ):
+
+            # --------------------------------------
+            # CONVERT SCORE TO FLOAT
+            # --------------------------------------
+
+            score = float(
+                score
+            )
+
+            # --------------------------------------
+            # STORE RERANK SCORE IN METADATA
+            # --------------------------------------
+
+            document.metadata[
+                "rerank_score"
+            ] = score
+
+            # --------------------------------------
+            # ADD DOCUMENT + SCORE
+            # --------------------------------------
+
+            scored_documents.append(
+
+                (
+                    document,
+                    score
+                )
 
             )
 
-            for document, score
-
-            in zip(
-
-                valid_documents,
-
-                scores
-
-            )
-
-        ]
-
         # ==========================================
-        # SORT DESCENDING
+        # SORT BY RERANK SCORE
+        #
+        # Highest relevance first.
         # ==========================================
 
         scored_documents.sort(
@@ -251,7 +364,7 @@ class Reranker:
         )
 
         # ==========================================
-        # RETURN TOP K
+        # RETURN TOP K DOCUMENTS
         # ==========================================
 
         return scored_documents[

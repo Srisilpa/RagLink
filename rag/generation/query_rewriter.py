@@ -2,57 +2,90 @@ from rag.generation.llm import LLM
 
 
 class QueryRewriter:
+    """
+    Rewrites user queries to improve retrieval quality
+    while preserving the original intent and entities.
+
+    Important:
+    The rewriter must NEVER answer the question
+    or introduce facts that are not present in the query.
+    """
 
     def __init__(self):
+
         self.llm = LLM()
 
-    def rewrite(self, question: str) -> str:
+    def rewrite(
+        self,
+        question: str
+    ) -> str:
+
+        # ==========================================
+        # VALIDATE INPUT
+        # ==========================================
 
         question = question.strip()
 
         if not question:
+
             return question
 
-        prompt = f"""
-You are a query rewriting component for an enterprise RAG system.
+        # ==========================================
+        # QUERY REWRITING PROMPT
+        # ==========================================
 
-Rewrite the user's question into a concise search query that improves
-retrieval from a company knowledge base.
+        prompt = f"""
+You are a query rewriting component for an enterprise
+RAG retrieval system.
+
+Your task is to rewrite the user's question into a
+better search query for retrieving relevant documents
+from a company knowledge base.
 
 IMPORTANT RULES:
 
-1. Preserve the exact meaning and intent of the original question.
+1. Preserve the exact meaning and intent of the
+   original question.
 
-2. NEVER change the type of question.
+2. NEVER answer the question.
 
-3. If the user asks "Who", preserve the person, role, or authority being asked for.
+3. NEVER introduce facts that are not explicitly
+   present in the original question.
 
-4. If the user asks "What database", preserve the database-related intent.
+4. NEVER guess an answer.
 
-5. If the user asks for a number, price, date, version, SLA, duration,
-or other specific value, preserve that exact requirement.
+5. NEVER add specific values, names, products,
+   technologies, databases, prices, dates, or roles
+   unless they already appear in the original question.
 
-6. Preserve important entity names exactly, such as:
-   - Project Meridian
-   - Series Tech Limited
-   - HR Policies v3.2
+6. Preserve important entity names exactly.
 
-7. Do not add unrelated terms such as:
-   - overview
-   - description
-   - purpose
+7. Preserve important keywords exactly.
 
-   unless they are directly relevant to the original question.
+8. Preserve the question type.
 
-8. Do not answer the question.
+   For example:
+   "Who" → preserve the person/role/authority intent.
 
-9. Do not invent facts.
+   "What database" → preserve the database intent.
 
-10. Do not remove important keywords from the original question.
+   "When" → preserve the time/date intent.
 
-11. Keep the rewritten query concise.
+   "How much" → preserve the price/cost intent.
 
-12. Return ONLY the rewritten query.
+   "How long" → preserve the duration intent.
+
+9. Remove unnecessary conversational words when
+   appropriate.
+
+10. Add useful search terminology ONLY if it is a
+    direct paraphrase of the original question.
+
+11. Do not change the scope of the question.
+
+12. Keep the rewritten query concise.
+
+13. Return ONLY the rewritten query.
 
 EXAMPLES:
 
@@ -60,28 +93,29 @@ Original:
 What is Project Meridian?
 
 Rewritten:
-Project Meridian definition overview
+Project Meridian definition
 
 Original:
 Who approves my leave request?
 
 Rewritten:
-Who approves leave requests reporting manager Department Head
+leave request approval authority
 
 Original:
 What database does Project Meridian use?
 
 Rewritten:
-Project Meridian database MySQL
+Project Meridian database
 
 Original:
 What is the maternity leave duration?
 
 Rewritten:
-Maternity leave duration
+maternity leave duration
 
 Original:
-What is the exact monthly subscription price for the B2B SaaS license?
+What is the exact monthly subscription price
+for the B2B SaaS license?
 
 Rewritten:
 B2B SaaS license exact monthly subscription price
@@ -90,7 +124,19 @@ Original:
 What happens to earned leave when I resign?
 
 Rewritten:
-Earned Leave resignation encashment
+earned leave resignation encashment
+
+Original:
+How do I deploy Project Alpha?
+
+Rewritten:
+Project Alpha deployment procedure
+
+Original:
+What is the SLA for resolving critical incidents?
+
+Rewritten:
+critical incident SLA resolution time
 
 USER QUESTION:
 {question}
@@ -98,11 +144,29 @@ USER QUESTION:
 REWRITTEN QUERY:
 """
 
+        # ==========================================
+        # GENERATE REWRITTEN QUERY
+        # ==========================================
+
         rewritten = self.llm.generate(
             prompt
         ).strip()
 
+        # ==========================================
+        # FALLBACK
+        # ==========================================
+
         if not rewritten:
+
             return question
+
+        # ==========================================
+        # SAFETY CHECK
+        # ==========================================
+
+        # Prevent accidental multi-line responses.
+        rewritten = rewritten.split(
+            "\n"
+        )[0].strip()
 
         return rewritten

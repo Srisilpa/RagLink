@@ -17,7 +17,22 @@ class HybridRetriever:
                 ↓
         Reciprocal Rank Fusion (RRF)
                 ↓
-        Top-K Hybrid Results
+        Hybrid Candidate Pool
+                ↓
+        Reranking
+
+    Retrieval flow:
+
+        Semantic Retrieval  -> 20
+        BM25 Retrieval      -> 20
+                  ↓
+             RRF Fusion
+                  ↓
+        20 Hybrid Candidates
+                  ↓
+             Reranker
+                  ↓
+             Top 5 Results
     """
 
     def __init__(
@@ -50,18 +65,34 @@ class HybridRetriever:
     def search(
         self,
         query: str,
-        top_k: int = 15
+        top_k: int = 20,
+        filters: dict = None
     ):
         """
         Perform hybrid retrieval.
 
-        Semantic retrieval and BM25 retrieval each
-        retrieve a larger candidate pool.
+        top_k represents the number of hybrid
+        candidates returned to the reranker.
 
-        Results are combined using Reciprocal Rank Fusion.
+        Semantic and BM25 each retrieve at least
+        20 candidates.
+
+        Example:
+
+            hybrid.search(
+                query="Project Meridian database",
+                top_k=20,
+                filters={
+                    "document_type": "project"
+                }
+            )
 
         Returns:
-            List of (Document, RRF score)
+
+            [
+                (Document, rrf_score),
+                ...
+            ]
         """
 
         # ==========================================
@@ -75,7 +106,7 @@ class HybridRetriever:
             )
 
         # ==========================================
-        # VALIDATE TOP_K
+        # VALIDATE TOP K
         # ==========================================
 
         if top_k <= 0:
@@ -85,11 +116,26 @@ class HybridRetriever:
             )
 
         # ==========================================
-        # CANDIDATE POOL
+        # VALIDATE FILTERS
         # ==========================================
 
-        # Retrieve more documents from both systems
-        # before applying RRF fusion.
+        if filters is not None:
+
+            if not isinstance(
+                filters,
+                dict
+            ):
+
+                raise ValueError(
+                    "filters must be a dictionary."
+                )
+
+        # ==========================================
+        # RETRIEVAL CANDIDATE POOL
+        # ==========================================
+
+        # Always retrieve at least 20 documents
+        # from each retrieval method.
 
         candidate_k = max(
             top_k,
@@ -97,7 +143,7 @@ class HybridRetriever:
         )
 
         # ==========================================
-        # SEMANTIC SEARCH
+        # SEMANTIC RETRIEVAL
         # ==========================================
 
         semantic_results = (
@@ -108,7 +154,9 @@ class HybridRetriever:
 
                 return_k=candidate_k,
 
-                fetch_k=candidate_k
+                fetch_k=candidate_k,
+
+                filters=filters
 
             )
 
@@ -120,7 +168,7 @@ class HybridRetriever:
         )
 
         # ==========================================
-        # BM25 SEARCH
+        # BM25 RETRIEVAL
         # ==========================================
 
         bm25_results = (
@@ -129,7 +177,9 @@ class HybridRetriever:
 
                 query=query,
 
-                top_k=candidate_k
+                top_k=candidate_k,
+
+                filters=filters
 
             )
 
@@ -150,9 +200,18 @@ class HybridRetriever:
 
             bm25_results,
 
-            top_k=top_k
+            top_k=candidate_k
 
         )
+
+        print(
+            f"Hybrid Candidates: "
+            f"{len(fused_results)}"
+        )
+
+        # ==========================================
+        # RETURN HYBRID CANDIDATES
+        # ==========================================
 
         return fused_results
 
@@ -164,11 +223,13 @@ class HybridRetriever:
         self,
         semantic_results,
         bm25_results,
-        top_k=15
+        top_k=20
     ):
         """
         Combine semantic and BM25 results using
         Reciprocal Rank Fusion.
+
+        Returns up to top_k hybrid candidates.
         """
 
         scores = {}
@@ -181,7 +242,7 @@ class HybridRetriever:
 
         for rank, (
             doc,
-            score
+            retrieval_score
         ) in enumerate(
 
             semantic_results,
@@ -190,30 +251,25 @@ class HybridRetriever:
 
         ):
 
-            # --------------------------------------
-            # Use content as document identity
-            # --------------------------------------
-
-            key = (
-                doc.page_content
-                .strip()
+            key = self._document_key(
+                doc
             )
 
             # --------------------------------------
-            # Store document
+            # STORE DOCUMENT
             # --------------------------------------
 
             documents[key] = doc
 
             # --------------------------------------
-            # RRF score
+            # CALCULATE RRF SCORE
             # --------------------------------------
 
             scores[key] = (
 
                 scores.get(
                     key,
-                    0
+                    0.0
                 )
 
                 +
@@ -234,7 +290,7 @@ class HybridRetriever:
 
         for rank, (
             doc,
-            score
+            retrieval_score
         ) in enumerate(
 
             bm25_results,
@@ -243,30 +299,25 @@ class HybridRetriever:
 
         ):
 
-            # --------------------------------------
-            # Use content as document identity
-            # --------------------------------------
-
-            key = (
-                doc.page_content
-                .strip()
+            key = self._document_key(
+                doc
             )
 
             # --------------------------------------
-            # Store document
+            # STORE DOCUMENT
             # --------------------------------------
 
             documents[key] = doc
 
             # --------------------------------------
-            # RRF score
-            # --------------------------------------
+            # CALCULATE RRF SCORE
+            # ======================================
 
             scores[key] = (
 
                 scores.get(
                     key,
-                    0
+                    0.0
                 )
 
                 +
@@ -297,13 +348,12 @@ class HybridRetriever:
         )
 
         # ==========================================
-        # RETURN TOP RESULTS
+        # RETURN HYBRID CANDIDATES
         # ==========================================
 
         return [
 
             (
-
                 documents[key],
 
                 score
@@ -317,3 +367,23 @@ class HybridRetriever:
             ]
 
         ]
+
+    # ==============================================
+    # DOCUMENT IDENTITY
+    # ==============================================
+
+    @staticmethod
+    def _document_key(
+        doc
+    ):
+        """
+        Generate a stable identity for a document.
+
+        Content is used as the primary identity
+        to prevent duplicate chunks.
+        """
+
+        return (
+            doc.page_content
+            .strip()
+        )
