@@ -9,7 +9,9 @@ from rag.retrieval.bm25 import (
 
 class HybridRetriever:
     """
-    Hybrid retrieval system combining:
+    Hybrid Retrieval System
+
+    Pipeline:
 
         Semantic Retrieval
                 +
@@ -17,22 +19,11 @@ class HybridRetriever:
                 ↓
         Reciprocal Rank Fusion (RRF)
                 ↓
-        Hybrid Candidate Pool
+        Candidate Pool
                 ↓
-        Reranking
+        Cross-Encoder Reranking
 
-    Retrieval flow:
-
-        Semantic Retrieval  -> 20
-        BM25 Retrieval      -> 20
-                  ↓
-             RRF Fusion
-                  ↓
-        20 Hybrid Candidates
-                  ↓
-             Reranker
-                  ↓
-             Top 5 Results
+    Supports metadata filtering.
     """
 
     def __init__(
@@ -71,28 +62,20 @@ class HybridRetriever:
         """
         Perform hybrid retrieval.
 
-        top_k represents the number of hybrid
-        candidates returned to the reranker.
-
-        Semantic and BM25 each retrieve at least
-        20 candidates.
-
         Example:
 
-            hybrid.search(
-                query="Project Meridian database",
-                top_k=20,
-                filters={
-                    "document_type": "project"
-                }
-            )
+            filters={
+                "document_type": "project"
+            }
 
-        Returns:
+        Or:
 
-            [
-                (Document, rrf_score),
-                ...
-            ]
+            filters={
+                "document_type": [
+                    "project",
+                    "company"
+                ]
+            }
         """
 
         # ==========================================
@@ -106,7 +89,7 @@ class HybridRetriever:
             )
 
         # ==========================================
-        # VALIDATE TOP K
+        # VALIDATE TOP_K
         # ==========================================
 
         if top_k <= 0:
@@ -116,26 +99,16 @@ class HybridRetriever:
             )
 
         # ==========================================
-        # VALIDATE FILTERS
+        # NORMALIZE FILTERS
         # ==========================================
 
-        if filters is not None:
-
-            if not isinstance(
-                filters,
-                dict
-            ):
-
-                raise ValueError(
-                    "filters must be a dictionary."
-                )
+        filters = self._normalize_filters(
+            filters
+        )
 
         # ==========================================
-        # RETRIEVAL CANDIDATE POOL
+        # CANDIDATE POOL SIZE
         # ==========================================
-
-        # Always retrieve at least 20 documents
-        # from each retrieval method.
 
         candidate_k = max(
             top_k,
@@ -200,7 +173,7 @@ class HybridRetriever:
 
             bm25_results,
 
-            top_k=candidate_k
+            top_k=top_k
 
         )
 
@@ -209,11 +182,45 @@ class HybridRetriever:
             f"{len(fused_results)}"
         )
 
-        # ==========================================
-        # RETURN HYBRID CANDIDATES
-        # ==========================================
-
         return fused_results
+
+    # ==============================================
+    # NORMALIZE FILTERS
+    # ==============================================
+
+    @staticmethod
+    def _normalize_filters(
+        filters
+    ):
+        """
+        Normalize filter values.
+
+        Example:
+
+            {
+                "document_type": "project"
+            }
+
+        becomes:
+
+            {
+                "document_type": "project"
+            }
+
+        Lists remain lists.
+        """
+
+        if not filters:
+
+            return {}
+
+        normalized = {}
+
+        for key, value in filters.items():
+
+            normalized[key] = value
+
+        return normalized
 
     # ==============================================
     # RRF FUSION
@@ -226,10 +233,15 @@ class HybridRetriever:
         top_k=20
     ):
         """
-        Combine semantic and BM25 results using
-        Reciprocal Rank Fusion.
+        Combine semantic and BM25 results
+        using Reciprocal Rank Fusion.
 
-        Returns up to top_k hybrid candidates.
+        RRF Score:
+
+            1 / (rrf_k + rank)
+
+        If a document appears in both
+        retrievers, its scores are combined.
         """
 
         scores = {}
@@ -255,15 +267,7 @@ class HybridRetriever:
                 doc
             )
 
-            # --------------------------------------
-            # STORE DOCUMENT
-            # --------------------------------------
-
             documents[key] = doc
-
-            # --------------------------------------
-            # CALCULATE RRF SCORE
-            # --------------------------------------
 
             scores[key] = (
 
@@ -303,15 +307,7 @@ class HybridRetriever:
                 doc
             )
 
-            # --------------------------------------
-            # STORE DOCUMENT
-            # --------------------------------------
-
             documents[key] = doc
-
-            # --------------------------------------
-            # CALCULATE RRF SCORE
-            # ======================================
 
             scores[key] = (
 
@@ -348,7 +344,7 @@ class HybridRetriever:
         )
 
         # ==========================================
-        # RETURN HYBRID CANDIDATES
+        # RETURN RESULTS
         # ==========================================
 
         return [
@@ -377,13 +373,43 @@ class HybridRetriever:
         doc
     ):
         """
-        Generate a stable identity for a document.
+        Generate stable document identity.
 
-        Content is used as the primary identity
-        to prevent duplicate chunks.
+        Uses:
+
+            source
+            page
+            chunk_id
+            content
+
+        This prevents accidental merging
+        of different chunks.
         """
 
+        metadata = (
+            doc.metadata
+            or {}
+        )
+
         return (
-            doc.page_content
-            .strip()
+
+            metadata.get(
+                "source",
+                ""
+            ),
+
+            str(
+                metadata.get(
+                    "page",
+                    ""
+                )
+            ),
+
+            metadata.get(
+                "chunk_id",
+                ""
+            ),
+
+            doc.page_content.strip()
+
         )

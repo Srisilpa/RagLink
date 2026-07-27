@@ -1,3 +1,5 @@
+import os
+
 from rag.embeddings.embedding_model import (
     get_embedding_model
 )
@@ -12,19 +14,6 @@ class Retriever:
     Semantic Retriever using ChromaDB.
 
     Supports optional metadata filtering.
-
-    Example:
-
-        retriever.retrieve(
-            query="What is Project Meridian?",
-            return_k=20,
-            filters={
-                "document_type": "project"
-            }
-        )
-
-    The metadata filter is applied directly
-    by ChromaDB before returning results.
     """
 
     def __init__(self):
@@ -58,33 +47,6 @@ class Retriever:
         fetch_k: int = 20,
         filters: dict = None
     ):
-        """
-        Retrieve semantically relevant documents.
-
-        Parameters
-        ----------
-        query : str
-            Search query.
-
-        return_k : int
-            Number of documents returned.
-
-        fetch_k : int
-            Number of documents fetched from ChromaDB.
-
-        filters : dict, optional
-            Metadata filters.
-
-        Example:
-
-            {
-                "document_type": "project"
-            }
-
-        Returns
-        -------
-        List[Tuple[Document, float]]
-        """
 
         # ==========================================
         # VALIDATE QUERY
@@ -97,7 +59,7 @@ class Retriever:
             )
 
         # ==========================================
-        # VALIDATE RETURN K
+        # VALIDATE K
         # ==========================================
 
         if return_k <= 0:
@@ -105,10 +67,6 @@ class Retriever:
             raise ValueError(
                 "return_k must be greater than 0."
             )
-
-        # ==========================================
-        # VALIDATE FETCH K
-        # ==========================================
 
         if fetch_k <= 0:
 
@@ -125,38 +83,20 @@ class Retriever:
             fetch_k = return_k
 
         # ==========================================
-        # CLEAN FILTERS
+        # BUILD CHROMA FILTER
         # ==========================================
 
-        if filters is not None:
-
-            if not isinstance(
-                filters,
-                dict
-            ):
-
-                raise ValueError(
-                    "filters must be a dictionary."
-                )
-
-            # Remove empty filter values
-            filters = {
-
-                key: value
-
-                for key, value
-                in filters.items()
-
-                if value is not None
-                and value != ""
-
-            }
+        chroma_filter = (
+            self._build_chroma_filter(
+                filters
+            )
+        )
 
         # ==========================================
         # SEMANTIC SEARCH
         # ==========================================
 
-        if filters:
+        if chroma_filter:
 
             results = (
 
@@ -167,7 +107,7 @@ class Retriever:
 
                     k=fetch_k,
 
-                    filter=filters
+                    filter=chroma_filter
 
                 )
 
@@ -189,12 +129,106 @@ class Retriever:
             )
 
         # ==========================================
-        # RETURN TOP RESULTS
+        # RETURN
         # ==========================================
 
         return results[
             :return_k
         ]
+
+    # ==========================================
+    # BUILD CHROMA FILTER
+    # ==========================================
+
+    @staticmethod
+    def _build_chroma_filter(
+        filters
+    ):
+
+        if not filters:
+
+            return None
+
+        conditions = []
+
+        for key, value in filters.items():
+
+            # --------------------------------------
+            # MULTIPLE VALUES
+            # --------------------------------------
+
+            if isinstance(
+                value,
+                list
+            ):
+
+                if len(value) == 1:
+
+                    conditions.append(
+
+                        {
+                            key:
+                                value[0]
+                        }
+
+                    )
+
+                elif len(value) > 1:
+
+                    conditions.append(
+
+                        {
+                            "$or": [
+
+                                {
+                                    key:
+                                        item
+                                }
+
+                                for item in value
+
+                            ]
+                        }
+
+                    )
+
+            # --------------------------------------
+            # SINGLE VALUE
+            # --------------------------------------
+
+            else:
+
+                conditions.append(
+
+                    {
+                        key:
+                            value
+                    }
+
+                )
+
+        # ==========================================
+        # SINGLE CONDITION
+        # ==========================================
+
+        if len(conditions) == 1:
+
+            return conditions[0]
+
+        # ==========================================
+        # MULTIPLE CONDITIONS
+        # ==========================================
+
+        if len(conditions) > 1:
+
+            return {
+
+                "$and":
+                    conditions
+
+            }
+
+        return None
 
 
 # ==============================================

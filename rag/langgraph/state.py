@@ -1,12 +1,11 @@
 from typing import (
     TypedDict,
     List,
-    Dict
+    Dict,
+    Any
 )
 
-from langchain_core.documents import (
-    Document
-)
+from langchain_core.documents import Document
 
 
 class GraphState(
@@ -21,51 +20,48 @@ class GraphState(
     question: str
 
     # ==========================================
-    # QUERY UNDERSTANDING
+    # REWRITTEN QUERY
     # ==========================================
 
-    # Rewritten query used for retrieval
     rewritten_query: str
 
-    # Detected intent
-    # Example:
-    # database_information
-    # policy_information
-    # technology_information
+    # ==========================================
+    # QUERY INTENT
+    # ==========================================
 
     intent: str
 
-    # Important entities extracted
-    # Example:
-    # ["Project Meridian"]
-    # ["Series Tech Limited", "London"]
+    # ==========================================
+    # EXTRACTED ENTITIES
+    # ==========================================
 
     entities: List[str]
 
     # ==========================================
     # METADATA FILTERS
+    #
+    # Example:
+    #
+    # {
+    #     "document_type": ["project", "company"]
+    # }
     # ==========================================
 
-    # Example:
-    # {"document_type": "project"}
-    #
-    # or:
-    # {"document_type": "company"}
-
-    metadata_filters: Dict
+    metadata_filters: Dict[str, Any]
 
     # ==========================================
     # RETRIEVED DOCUMENTS
     # ==========================================
 
-    retrieved_docs: List[
-        Document
-    ]
+    retrieved_docs: List[Document]
 
     # ==========================================
     # RERANKED DOCUMENTS
     #
-    # (Document, relevance_score)
+    # [
+    #     (Document, score),
+    #     ...
+    # ]
     # ==========================================
 
     reranked_docs: List
@@ -95,13 +91,13 @@ class GraphState(
     retrieval_count: int
 
     # ==========================================
-    # FINAL CONTEXT COUNT
+    # CONTEXT COUNT
     # ==========================================
 
     context_count: int
 
     # ==========================================
-    # LATENCY INFORMATION
+    # LATENCY
     # ==========================================
 
     latency: float

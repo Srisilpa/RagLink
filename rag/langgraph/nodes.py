@@ -22,6 +22,13 @@ from rag.generation.llm import (
     GroqLLM
 )
 
+from rag.compression.compressor import (
+    ContextCompressor
+)
+
+from rag.refinement.context_refiner import (
+    ContextRefiner
+)
 
 # ==============================================
 # INITIALIZE COMPONENTS
@@ -37,6 +44,17 @@ reranker = Reranker()
 
 llm = GroqLLM()
 
+compressor = ContextCompressor()
+
+refiner = ContextRefiner(
+
+    max_sentences_per_document=5,
+
+    min_keyword_overlap=1,
+
+    max_context_chars=8000
+
+)
 
 # ==============================================
 # QUERY UNDERSTANDING
@@ -381,9 +399,8 @@ def rerank_documents(
 
     return state
 
-
 # ==============================================
-# BUILD CONTEXT
+# BUILD REFINED CONTEXT
 # ==============================================
 
 def build_context(
@@ -402,65 +419,50 @@ def build_context(
         return state
 
     # ==========================================
-    # INITIALIZE CONTEXT
+    # GET RERANKED DOCUMENTS
     # ==========================================
 
-    context_parts = []
-
-    # ==========================================
-    # ADD RERANKED DOCUMENTS
-    # ==========================================
-
-    for item in state.get(
+    reranked_docs = state.get(
 
         "reranked_docs",
 
         []
 
-    ):
-
-        # --------------------------------------
-        # RERANKER RETURNS:
-        #
-        # (Document, relevance_score)
-        # --------------------------------------
-
-        if isinstance(
-            item,
-            tuple
-        ):
-
-            doc = item[
-                0
-            ]
-
-        else:
-
-            doc = item
-
-        # --------------------------------------
-        # ADD DOCUMENT CONTENT
-        # --------------------------------------
-
-        if doc.page_content:
-
-            context_parts.append(
-
-                doc.page_content.strip()
-
-            )
+    )
 
     # ==========================================
-    # JOIN CONTEXT
+    # GET QUERY
+    # ==========================================
+
+    query = state.get(
+
+        "rewritten_query",
+
+        state[
+            "question"
+        ]
+
+    )
+
+    # ==========================================
+    # REFINE CONTEXT
+    # ==========================================
+
+    refined_context = refiner.refine(
+
+        query=query,
+
+        documents=reranked_docs
+
+    )
+
+    # ==========================================
+    # STORE CONTEXT
     # ==========================================
 
     state[
         "context"
-    ] = "\n\n".join(
-
-        context_parts
-
-    )
+    ] = refined_context
 
     # ==========================================
     # CONTEXT COUNT
@@ -469,68 +471,10 @@ def build_context(
     state[
         "context_count"
     ] = len(
-        context_parts
-    )
 
-    return state
-
-
-# ==============================================
-# GENERATE ANSWER
-# ==============================================
-
-def generate_answer(
-    state
-):
-
-    # ==========================================
-    # SKIP IF CACHE HIT
-    # ==========================================
-
-    if state.get(
-        "cache_hit",
-        False
-    ):
-
-        return state
-
-    # ==========================================
-    # BUILD PROMPT
-    # ==========================================
-
-    prompt = build_prompt(
-
-        question=state[
-            "question"
-        ],
-
-        context=state.get(
-
-            "context",
-
-            ""
-
-        )
+        reranked_docs
 
     )
-
-    # ==========================================
-    # GENERATE ANSWER
-    # ==========================================
-
-    answer = llm.generate(
-
-        prompt
-
-    )
-
-    # ==========================================
-    # STORE ANSWER
-    # ==========================================
-
-    state[
-        "answer"
-    ] = answer
 
     return state
 
@@ -566,5 +510,144 @@ def save_cache(
             ]
 
         )
+
+    return state
+
+# ==============================================
+# BUILD REFINED CONTEXT
+# ==============================================
+
+def build_context(
+    state
+):
+
+    # ==========================================
+    # SKIP IF CACHE HIT
+    # ==========================================
+
+    if state.get(
+        "cache_hit",
+        False
+    ):
+
+        return state
+
+    # ==========================================
+    # GET RERANKED DOCUMENTS
+    # ==========================================
+
+    reranked_docs = state.get(
+
+        "reranked_docs",
+
+        []
+
+    )
+
+    # ==========================================
+    # GET QUERY
+    # ==========================================
+
+    query = state.get(
+
+        "rewritten_query",
+
+        state.get(
+
+            "question",
+
+            ""
+
+        )
+
+    )
+
+    # ==========================================
+    # REFINE CONTEXT
+    # ==========================================
+
+    refined_context = refiner.refine(
+
+        query=query,
+
+        documents=reranked_docs
+
+    )
+
+    # ==========================================
+    # STORE CONTEXT
+    # ==========================================
+
+    state[
+        "context"
+    ] = refined_context
+
+    # ==========================================
+    # UPDATE CONTEXT COUNT
+    # ==========================================
+
+    state[
+        "context_count"
+    ] = len(
+
+        reranked_docs
+
+    )
+
+    return state
+
+
+
+# ==============================================
+# GENERATE ANSWER
+# ==============================================
+
+def generate_answer(
+    state
+):
+
+    # ==========================================
+    # SKIP IF CACHE HIT
+    # ==========================================
+
+    if state.get(
+        "cache_hit",
+        False
+    ):
+
+        return state
+
+    # ==========================================
+    # BUILD PROMPT
+    # ==========================================
+
+    prompt = build_prompt(
+
+        question=state[
+            "question"
+        ],
+
+        context=state.get(
+            "context",
+            ""
+        )
+
+    )
+
+    # ==========================================
+    # GENERATE ANSWER
+    # ==========================================
+
+    answer = llm.generate(
+        prompt
+    )
+
+    # ==========================================
+    # STORE ANSWER
+    # ==========================================
+
+    state[
+        "answer"
+    ] = answer
 
     return state

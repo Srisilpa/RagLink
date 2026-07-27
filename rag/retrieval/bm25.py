@@ -8,7 +8,7 @@ class BM25Retriever:
     """
     BM25 keyword-based retriever.
 
-    Supports optional metadata filtering.
+    Supports metadata filtering.
 
     Example:
 
@@ -19,6 +19,15 @@ class BM25Retriever:
                 "document_type": "project"
             }
         )
+
+    Multiple values are also supported:
+
+        filters={
+            "document_type": [
+                "project",
+                "company"
+            ]
+        }
     """
 
     def __init__(
@@ -37,10 +46,8 @@ class BM25Retriever:
         ):
 
             raise FileNotFoundError(
-
                 f"BM25 chunks file not found: "
                 f"{self.chunks_path}"
-
             )
 
         # ==========================================
@@ -52,17 +59,12 @@ class BM25Retriever:
             "rb"
         ) as f:
 
-            self.documents = pickle.load(
-                f
-            )
+            self.documents = pickle.load(f)
 
         if not self.documents:
 
             raise ValueError(
-
-                "No documents found for "
-                "BM25 retrieval."
-
+                "No documents found for BM25 retrieval."
             )
 
         # ==========================================
@@ -84,17 +86,15 @@ class BM25Retriever:
         # ==========================================
 
         self.bm25 = BM25Okapi(
-
             self.tokenized_documents
-
         )
 
-    # ==========================================
+    # ==============================================
     # TOKENIZATION
-    # ==========================================
+    # ==============================================
 
+    @staticmethod
     def _tokenize(
-        self,
         text: str
     ):
 
@@ -109,9 +109,9 @@ class BM25Retriever:
 
         )
 
-    # ==========================================
+    # ==============================================
     # METADATA FILTER
-    # ==========================================
+    # ==============================================
 
     def _matches_filters(
         self,
@@ -122,20 +122,25 @@ class BM25Retriever:
         Check whether a document matches
         all requested metadata filters.
 
-        Example:
+        Supports:
 
-            filters = {
+            filters={
                 "document_type": "project"
             }
 
-        Returns:
+        and:
 
-            True
-            or
-            False
+            filters={
+                "document_type": [
+                    "project",
+                    "company"
+                ]
+            }
         """
 
-        # No filters means every document matches
+        # ==========================================
+        # NO FILTERS
+        # ==========================================
 
         if not filters:
 
@@ -147,7 +152,7 @@ class BM25Retriever:
         )
 
         # ==========================================
-        # CHECK EACH FILTER
+        # CHECK ALL FILTERS
         # ==========================================
 
         for key, expected_value in filters.items():
@@ -156,13 +161,28 @@ class BM25Retriever:
                 key
             )
 
-            # --------------------------------------
-            # FILTER DOES NOT MATCH
-            # --------------------------------------
+            # ======================================
+            # MULTIPLE ALLOWED VALUES
+            # ======================================
 
-            if actual_value != expected_value:
+            if isinstance(
+                expected_value,
+                list
+            ):
 
-                return False
+                if actual_value not in expected_value:
+
+                    return False
+
+            # ======================================
+            # SINGLE VALUE
+            # ======================================
+
+            else:
+
+                if actual_value != expected_value:
+
+                    return False
 
         # ==========================================
         # ALL FILTERS MATCHED
@@ -170,9 +190,9 @@ class BM25Retriever:
 
         return True
 
-    # ==========================================
+    # ==============================================
     # RETRIEVE
-    # ==========================================
+    # ==============================================
 
     def retrieve(
         self,
@@ -183,12 +203,13 @@ class BM25Retriever:
         """
         Retrieve documents using BM25.
 
-        Optional metadata filters are applied
-        before ranking results.
+        Returns:
+
+            List of (Document, score)
         """
 
         # ==========================================
-        # HANDLE EMPTY QUERY
+        # EMPTY QUERY
         # ==========================================
 
         if not query or not query.strip():
@@ -196,33 +217,14 @@ class BM25Retriever:
             return []
 
         # ==========================================
-        # VALIDATE TOP K
+        # VALIDATE TOP_K
         # ==========================================
 
         if top_k <= 0:
 
             raise ValueError(
-
                 "top_k must be greater than 0."
-
             )
-
-        # ==========================================
-        # VALIDATE FILTERS
-        # ==========================================
-
-        if filters is not None:
-
-            if not isinstance(
-                filters,
-                dict
-            ):
-
-                raise ValueError(
-
-                    "filters must be a dictionary."
-
-                )
 
         # ==========================================
         # TOKENIZE QUERY
@@ -250,7 +252,8 @@ class BM25Retriever:
                 len(scores)
             ),
 
-            key=lambda i: scores[i],
+            key=lambda i:
+                scores[i],
 
             reverse=True
 
@@ -264,53 +267,35 @@ class BM25Retriever:
 
         for index in ranked_indices:
 
-            # --------------------------------------
-            # GET DOCUMENT
-            # --------------------------------------
-
             document = (
                 self.documents[index]
             )
 
-            # --------------------------------------
+            # ======================================
             # APPLY METADATA FILTER
-            # --------------------------------------
+            # ======================================
 
             if not self._matches_filters(
-
                 document,
-
                 filters
-
             ):
 
                 continue
 
-            # --------------------------------------
-            # GET SCORE
-            # --------------------------------------
-
             score = scores[index]
-
-            # --------------------------------------
-            # ADD RESULT
-            # --------------------------------------
 
             results.append(
 
                 (
-
                     document,
-
                     float(score)
-
                 )
 
             )
 
-            # --------------------------------------
+            # ======================================
             # STOP AFTER TOP K
-            # --------------------------------------
+            # ======================================
 
             if len(results) >= top_k:
 
@@ -318,9 +303,9 @@ class BM25Retriever:
 
         return results
 
-    # ==========================================
-    # SEARCH
-    # ==========================================
+    # ==============================================
+    # SEARCH ALIAS
+    # ==============================================
 
     def search(
         self,
@@ -328,9 +313,6 @@ class BM25Retriever:
         top_k: int = 10,
         filters: dict = None
     ):
-        """
-        Backward-compatible search method.
-        """
 
         return self.retrieve(
 
