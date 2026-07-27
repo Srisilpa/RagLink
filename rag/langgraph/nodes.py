@@ -2,6 +2,10 @@ from rag.cache.memory_cache import (
     MemoryCache
 )
 
+from rag.query.query_understanding import (
+    QueryUnderstanding
+)
+
 from rag.retrieval.hybrid import (
     HybridRetriever
 )
@@ -25,11 +29,144 @@ from rag.generation.llm import (
 
 cache = MemoryCache()
 
+query_understanding = QueryUnderstanding()
+
 retriever = HybridRetriever()
 
 reranker = Reranker()
 
 llm = GroqLLM()
+
+
+# ==============================================
+# QUERY UNDERSTANDING
+# ==============================================
+
+def understand_query(
+    state
+):
+
+    # ==========================================
+    # GET ORIGINAL QUESTION
+    # ==========================================
+
+    question = state[
+        "question"
+    ]
+
+    # ==========================================
+    # UNDERSTAND QUERY
+    # ==========================================
+
+    result = query_understanding.understand(
+
+        question
+
+    )
+
+    # ==========================================
+    # STORE REWRITTEN QUERY
+    # ==========================================
+
+    state[
+        "rewritten_query"
+    ] = result.get(
+
+        "rewritten_query",
+
+        question
+
+    )
+
+    # ==========================================
+    # STORE INTENT
+    # ==========================================
+
+    state[
+        "intent"
+    ] = result.get(
+
+        "intent",
+
+        "general_information"
+
+    )
+
+    # ==========================================
+    # STORE ENTITIES
+    # ==========================================
+
+    state[
+        "entities"
+    ] = result.get(
+
+        "entities",
+
+        []
+
+    )
+
+    # ==========================================
+    # STORE METADATA FILTERS
+    # ==========================================
+
+    state[
+        "metadata_filters"
+    ] = result.get(
+
+        "metadata_filters",
+
+        {}
+
+    )
+
+    # ==========================================
+    # DEBUG INFORMATION
+    # ==========================================
+
+    print(
+        "\n"
+        + "=" * 60
+    )
+
+    print(
+        "QUERY UNDERSTANDING"
+    )
+
+    print(
+        "=" * 60
+    )
+
+    print(
+        f"Original Query: "
+        f"{question}"
+    )
+
+    print(
+        f"Rewritten Query: "
+        f"{state['rewritten_query']}"
+    )
+
+    print(
+        f"Intent: "
+        f"{state['intent']}"
+    )
+
+    print(
+        f"Entities: "
+        f"{state['entities']}"
+    )
+
+    print(
+        f"Metadata Filters: "
+        f"{state['metadata_filters']}"
+    )
+
+    print(
+        "=" * 60
+    )
+
+    return state
 
 
 # ==============================================
@@ -87,7 +224,7 @@ def retrieve_documents(
         return state
 
     # ==========================================
-    # GET QUERY
+    # GET REWRITTEN QUERY
     # ==========================================
 
     query = state.get(
@@ -108,7 +245,7 @@ def retrieve_documents(
 
         "metadata_filters",
 
-        None
+        {}
 
     )
 
@@ -136,7 +273,9 @@ def retrieve_documents(
 
         doc
 
-        for doc, _ in docs
+        for doc, _
+
+        in docs
 
     ]
 
@@ -148,6 +287,11 @@ def retrieve_documents(
         "retrieval_count"
     ] = len(
         docs
+    )
+
+    print(
+        f"\nHybrid Candidates: "
+        f"{len(docs)}"
     )
 
     return state
@@ -173,7 +317,7 @@ def rerank_documents(
         return state
 
     # ==========================================
-    # GET RETRIEVED DOCUMENTS
+    # GET DOCUMENTS
     # ==========================================
 
     documents = state.get(
@@ -185,20 +329,26 @@ def rerank_documents(
     )
 
     # ==========================================
+    # GET REWRITTEN QUERY
+    # ==========================================
+
+    query = state.get(
+
+        "rewritten_query",
+
+        state[
+            "question"
+        ]
+
+    )
+
+    # ==========================================
     # RERANK
     # ==========================================
 
     reranked = reranker.rerank(
 
-        query=state.get(
-
-            "rewritten_query",
-
-            state[
-                "question"
-            ]
-
-        ),
+        query=query,
 
         documents=documents,
 
@@ -222,6 +372,11 @@ def rerank_documents(
         "context_count"
     ] = len(
         reranked
+    )
+
+    print(
+        f"Reranked Documents: "
+        f"{len(reranked)}"
     )
 
     return state
@@ -275,14 +430,16 @@ def build_context(
             tuple
         ):
 
-            doc = item[0]
+            doc = item[
+                0
+            ]
 
         else:
 
             doc = item
 
         # --------------------------------------
-        # ADD CONTENT
+        # ADD DOCUMENT CONTENT
         # --------------------------------------
 
         if doc.page_content:
@@ -303,6 +460,16 @@ def build_context(
 
         context_parts
 
+    )
+
+    # ==========================================
+    # CONTEXT COUNT
+    # ==========================================
+
+    state[
+        "context_count"
+    ] = len(
+        context_parts
     )
 
     return state
@@ -338,8 +505,11 @@ def generate_answer(
         ],
 
         context=state.get(
+
             "context",
+
             ""
+
         )
 
     )
@@ -349,7 +519,9 @@ def generate_answer(
     # ==========================================
 
     answer = llm.generate(
+
         prompt
+
     )
 
     # ==========================================
@@ -376,8 +548,11 @@ def save_cache(
     # ==========================================
 
     if not state.get(
+
         "cache_hit",
+
         False
+
     ):
 
         cache.set(

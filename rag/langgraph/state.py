@@ -21,14 +21,36 @@ class GraphState(
     question: str
 
     # ==========================================
-    # REWRITTEN QUERY
+    # QUERY UNDERSTANDING
     # ==========================================
 
+    # Rewritten query used for retrieval
     rewritten_query: str
+
+    # Detected intent
+    # Example:
+    # database_information
+    # policy_information
+    # technology_information
+
+    intent: str
+
+    # Important entities extracted
+    # Example:
+    # ["Project Meridian"]
+    # ["Series Tech Limited", "London"]
+
+    entities: List[str]
 
     # ==========================================
     # METADATA FILTERS
     # ==========================================
+
+    # Example:
+    # {"document_type": "project"}
+    #
+    # or:
+    # {"document_type": "company"}
 
     metadata_filters: Dict
 
