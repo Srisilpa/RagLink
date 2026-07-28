@@ -1,20 +1,28 @@
+import os
+
 from django.shortcuts import (
     render,
     redirect,
     get_object_or_404
 )
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import (
+    login_required
+)
 
 from django.contrib import messages
 
 from django.http import FileResponse
 
+from django.utils import timezone
+
 from .models import Document
 
 from .forms import DocumentForm
 
-import os
+from rag.ingestion.dynamic_ingestion import (
+    DynamicIngestionManager
+)
 
 
 # =========================================================
@@ -25,158 +33,335 @@ import os
 def manage_documents(request):
 
     # -----------------------------------------------------
-    # Check user role
+    # DOCUMENT VISIBILITY
     # -----------------------------------------------------
 
     if request.user.role == "ADMIN":
 
-        # ADMIN can see all documents
         documents = Document.objects.all()
 
     elif request.user.role == "TEAM_LEAD":
 
-        # TEAM LEAD can see only their own documents
         documents = Document.objects.filter(
+
             uploaded_by=request.user
+
         )
 
     else:
 
         messages.error(
+
             request,
-            "You do not have permission to manage documents."
+
+            "You do not have permission "
+            "to manage documents."
+
         )
 
         return redirect(
             "dashboard"
         )
 
-
     # -----------------------------------------------------
-    # Upload Document
+    # UPLOAD DOCUMENT
     # -----------------------------------------------------
 
     if request.method == "POST":
 
         form = DocumentForm(
+
             request.POST,
+
             request.FILES
+
         )
 
         if form.is_valid():
 
-            # Do not save immediately
+            # ---------------------------------------------
+            # SAVE DOCUMENT DATABASE RECORD
+            # ---------------------------------------------
+
             doc = form.save(
                 commit=False
             )
 
-            # Set current logged-in user
-            doc.uploaded_by = request.user
-
-            # Save document
-            doc.save()
-
-            messages.success(
-                request,
-                "Document uploaded successfully."
+            doc.uploaded_by = (
+                request.user
             )
 
+            doc.save()
+
+            # ---------------------------------------------
+            # DYNAMIC RAG INGESTION
+            # ---------------------------------------------
+
+            try:
+
+                ingestion_manager = (
+
+                    DynamicIngestionManager()
+
+                )
+
+                # -----------------------------------------
+                # DETERMINE DOCUMENT TYPE
+                # -----------------------------------------
+
+                if request.user.role == "ADMIN":
+
+                    document_type = (
+                        "company"
+                    )
+
+                elif request.user.role == "TEAM_LEAD":
+
+                    document_type = (
+                        "project"
+                    )
+
+                else:
+
+                    document_type = (
+                        "other"
+                    )
+
+                # -----------------------------------------
+                # INGEST
+                # -----------------------------------------
+
+                result = (
+
+                    ingestion_manager
+                    .ingest_document(
+
+                        file_path=(
+                            doc.file.path
+                        ),
+
+                        document_id=(
+                            doc.id
+                        ),
+
+                        document_type=(
+                            document_type
+                        )
+
+                    )
+
+                )
+
+                # -----------------------------------------
+                # UPDATE INDEXING STATUS
+                # -----------------------------------------
+
+                doc.indexed = True
+
+                doc.indexed_chunk_count = (
+
+                    result.get(
+                        "chunks",
+                        0
+                    )
+
+                )
+
+                doc.indexed_at = (
+                    timezone.now()
+                )
+
+                doc.indexing_error = ""
+
+                doc.save(
+
+                    update_fields=[
+
+                        "indexed",
+
+                        "indexed_chunk_count",
+
+                        "indexed_at",
+
+                        "indexing_error"
+
+                    ]
+
+                )
+
+                messages.success(
+
+                    request,
+
+                    "Document uploaded and "
+                    "indexed successfully."
+
+                )
+
+            except Exception as e:
+
+                # -----------------------------------------
+                # INDEXING FAILED
+                # -----------------------------------------
+
+                doc.indexed = False
+
+                doc.indexed_chunk_count = 0
+
+                doc.indexing_error = str(
+                    e
+                )
+
+                doc.save(
+
+                    update_fields=[
+
+                        "indexed",
+
+                        "indexed_chunk_count",
+
+                        "indexing_error"
+
+                    ]
+
+                )
+
+                messages.warning(
+
+                    request,
+
+                    "Document uploaded successfully, "
+                    "but RAG indexing failed."
+
+                )
+
+                print(
+
+                    "DYNAMIC INGESTION ERROR:",
+
+                    repr(e)
+
+                )
+
             return redirect(
+
                 "manage_documents"
+
             )
 
         else:
 
             messages.error(
+
                 request,
-                "Please correct the errors below."
+
+                "Please correct the "
+                "errors below."
+
             )
 
     else:
 
         form = DocumentForm()
 
-
     # -----------------------------------------------------
-    # Search Filters
+    # SEARCH FILTERS
     # -----------------------------------------------------
 
     search = request.GET.get(
+
         "search",
+
         ""
+
     )
 
     department = request.GET.get(
+
         "department",
+
         ""
+
     )
 
     category = request.GET.get(
+
         "category",
+
         ""
+
     )
 
     uploaded_by = request.GET.get(
+
         "uploaded_by",
+
         ""
+
     )
 
-
     # -----------------------------------------------------
-    # Search by title
+    # FILTER BY TITLE
     # -----------------------------------------------------
 
     if search:
 
         documents = documents.filter(
+
             title__icontains=search
+
         )
 
-
     # -----------------------------------------------------
-    # Filter by department
+    # FILTER BY DEPARTMENT
     # -----------------------------------------------------
 
     if department:
 
         documents = documents.filter(
+
             department__icontains=department
+
         )
 
-
     # -----------------------------------------------------
-    # Filter by category
+    # FILTER BY CATEGORY
     # -----------------------------------------------------
 
     if category:
 
         documents = documents.filter(
+
             category__icontains=category
+
         )
 
-
     # -----------------------------------------------------
-    # Filter by uploaded user
+    # FILTER BY USER
     # -----------------------------------------------------
 
     if uploaded_by:
 
         documents = documents.filter(
-            uploaded_by__username__icontains=uploaded_by
+
+            uploaded_by__username__icontains=(
+                uploaded_by
+            )
+
         )
 
-
     # -----------------------------------------------------
-    # Newest documents first
+    # ORDER
     # -----------------------------------------------------
 
     documents = documents.order_by(
+
         "-upload_date"
+
     )
 
-
     # -----------------------------------------------------
-    # Render page
+    # RENDER
     # -----------------------------------------------------
 
     return render(
@@ -186,17 +371,25 @@ def manage_documents(request):
         "documents/manage_documents.html",
 
         {
-            "form": form,
 
-            "documents": documents,
+            "form":
+                form,
 
-            "search": search,
+            "documents":
+                documents,
 
-            "department": department,
+            "search":
+                search,
 
-            "category": category,
+            "department":
+                department,
 
-            "uploaded_by": uploaded_by,
+            "category":
+                category,
+
+            "uploaded_by":
+                uploaded_by,
+
         }
 
     )
@@ -212,88 +405,191 @@ def delete_document(
     document_id
 ):
 
-    # -----------------------------------------------------
-    # Only ADMIN can delete
-    # -----------------------------------------------------
+    # =====================================================
+    # PERMISSION
+    # =====================================================
 
     if request.user.role != "ADMIN":
 
         messages.error(
+
             request,
+
             "Permission Denied."
+
         )
 
         return redirect(
+
             "manage_documents"
+
         )
 
-
-    # -----------------------------------------------------
-    # Get document
-    # -----------------------------------------------------
+    # =====================================================
+    # GET DOCUMENT
+    # =====================================================
 
     document = get_object_or_404(
+
         Document,
+
         id=document_id
+
     )
 
+    document_title = document.title
 
-    # -----------------------------------------------------
-    # Delete physical file
-    # -----------------------------------------------------
+    document_file_path = None
 
     if document.file:
 
-        if os.path.exists(
-            document.file.path
-        ):
+        document_file_path = (
 
-            os.remove(
-                document.file.path
+            document.file.path
+
+        )
+
+    # =====================================================
+    # DELETE FROM RAG INDEX
+    # =====================================================
+
+    try:
+
+        ingestion_manager = (
+
+            DynamicIngestionManager()
+
+        )
+
+        result = (
+
+            ingestion_manager
+            .delete_document(
+
+                document.id
+
             )
 
+        )
 
-    # -----------------------------------------------------
-    # Delete database record
-    # -----------------------------------------------------
+        print(
+
+            "Removed chunks:",
+
+            result[
+                "removed_chunks"
+            ]
+
+        )
+
+    except Exception as e:
+
+        print(
+
+            "RAG deletion error:",
+
+            e
+
+        )
+
+        messages.error(
+
+            request,
+
+            "Failed to remove document "
+            "from RAG index."
+
+        )
+
+        return redirect(
+
+            "manage_documents"
+
+        )
+
+    # =====================================================
+    # DELETE PHYSICAL FILE
+    # =====================================================
+
+    if (
+
+        document_file_path
+
+        and
+
+        os.path.exists(
+
+            document_file_path
+
+        )
+
+    ):
+
+        try:
+
+            os.remove(
+
+                document_file_path
+
+            )
+
+        except Exception as e:
+
+            print(
+
+                "File deletion warning:",
+
+                e
+
+            )
+
+    # =====================================================
+    # DELETE DATABASE RECORD
+    # =====================================================
 
     document.delete()
 
-
     messages.success(
-        request,
-        "Document deleted successfully."
-    )
 
+        request,
+
+        f"Document '{document_title}' "
+        "and all indexed RAG data deleted successfully."
+
+    )
 
     return redirect(
+
         "manage_documents"
+
     )
-
-
 # =========================================================
 # DOWNLOAD DOCUMENT
 # =========================================================
 
 @login_required(login_url="home")
 def download_document(
+
     request,
+
     document_id
+
 ):
 
     # -----------------------------------------------------
-    # Get document
+    # GET DOCUMENT
     # -----------------------------------------------------
 
     document = get_object_or_404(
+
         Document,
+
         id=document_id
+
     )
 
-
     # -----------------------------------------------------
-    # TEAM LEAD can download only own document
-    # ADMIN can download any document
+    # TEAM LEAD PERMISSION
     # -----------------------------------------------------
 
     if request.user.role == "TEAM_LEAD":
@@ -301,17 +597,22 @@ def download_document(
         if document.uploaded_by != request.user:
 
             messages.error(
+
                 request,
-                "You do not have permission to download this document."
+
+                "You do not have permission "
+                "to download this document."
+
             )
 
             return redirect(
+
                 "manage_documents"
+
             )
 
-
     # -----------------------------------------------------
-    # Return file
+    # RETURN FILE
     # -----------------------------------------------------
 
     return FileResponse(
@@ -323,7 +624,9 @@ def download_document(
         as_attachment=True,
 
         filename=os.path.basename(
+
             document.file.name
+
         )
 
     )

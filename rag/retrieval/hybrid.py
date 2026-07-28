@@ -1,3 +1,5 @@
+from langchain_core.documents import Document
+
 from rag.retrieval.retriever import (
     SemanticRetriever
 )
@@ -23,7 +25,34 @@ class HybridRetriever:
                 ↓
         Cross-Encoder Reranking
 
-    Supports metadata filtering.
+    Supports:
+
+        1. No metadata filtering
+
+            filters={}
+
+        2. Single-domain filtering
+
+            filters={
+                "document_type": "project"
+            }
+
+        3. Multi-domain filtering
+
+            filters={
+                "document_type": [
+                    "project",
+                    "infrastructure"
+                ]
+            }
+
+    Important:
+
+        The semantic and BM25 retrievers are responsible
+        for applying the actual metadata filtering.
+
+        This class only normalises the filter structure
+        and passes it to both retrieval systems.
     """
 
     def __init__(
@@ -49,6 +78,23 @@ class HybridRetriever:
 
         self.rrf_k = rrf_k
 
+
+    # ==============================================
+# RELOAD BM25 INDEX
+# ==============================================
+
+    def reload_bm25(self):
+
+        print(
+        "\nReloading BM25 index..."
+        )
+
+        self.bm25 = BM25Retriever()
+
+        print(
+        "BM25 index reloaded successfully."
+        )
+
     # ==============================================
     # SEARCH
     # ==============================================
@@ -62,20 +108,37 @@ class HybridRetriever:
         """
         Perform hybrid retrieval.
 
-        Example:
+        Examples:
+
+        ------------------------------------------------
+        No filter
+        ------------------------------------------------
+
+            filters={}
+
+        This searches across all indexed documents.
+
+        ------------------------------------------------
+        Single domain
+        ------------------------------------------------
 
             filters={
                 "document_type": "project"
             }
 
-        Or:
+        ------------------------------------------------
+        Multiple domains
+        ------------------------------------------------
 
             filters={
                 "document_type": [
                     "project",
-                    "company"
+                    "infrastructure"
                 ]
             }
+
+        The multi-domain filter is passed to both
+        semantic and BM25 retrieval.
         """
 
         # ==========================================
@@ -104,6 +167,35 @@ class HybridRetriever:
 
         filters = self._normalize_filters(
             filters
+        )
+
+        # ==========================================
+        # DEBUG FILTERS
+        # ==========================================
+
+        print(
+            "\n"
+            + "=" * 60
+        )
+
+        print(
+            "HYBRID RETRIEVAL"
+        )
+
+        print(
+            "=" * 60
+        )
+
+        print(
+            f"Query: {query}"
+        )
+
+        print(
+            f"Filters: {filters}"
+        )
+
+        print(
+            "=" * 60
         )
 
         # ==========================================
@@ -193,32 +285,112 @@ class HybridRetriever:
         filters
     ):
         """
-        Normalize filter values.
+        Normalize metadata filters.
 
-        Example:
+        Supported:
 
-            {
-                "document_type": "project"
-            }
+            {}
 
-        becomes:
+        or:
 
             {
                 "document_type": "project"
             }
 
-        Lists remain lists.
+        or:
+
+            {
+                "document_type": [
+                    "project",
+                    "company"
+                ]
+            }
+
+        Empty filters mean:
+
+            Do not apply metadata filtering.
+
+        Lists are preserved because the underlying
+        retrievers must decide how to translate
+        multi-value filters into their respective
+        database/search operations.
         """
+
+        # ==========================================
+        # NO FILTERS
+        # ==========================================
 
         if not filters:
 
             return {}
 
+        # ==========================================
+        # VALIDATE FILTER TYPE
+        # ==========================================
+
+        if not isinstance(
+            filters,
+            dict
+        ):
+
+            raise TypeError(
+                "filters must be a dictionary."
+            )
+
         normalized = {}
+
+        # ==========================================
+        # PROCESS FILTERS
+        # ==========================================
 
         for key, value in filters.items():
 
-            normalized[key] = value
+            # --------------------------------------
+            # IGNORE EMPTY VALUES
+            # --------------------------------------
+
+            if value is None:
+
+                continue
+
+            if value == "":
+
+                continue
+
+            if isinstance(
+                value,
+                list
+            ):
+
+                # Remove empty values
+
+                cleaned_values = [
+
+                    item
+
+                    for item in value
+
+                    if item is not None
+                    and item != ""
+
+                ]
+
+                # Empty list means:
+                # no restriction
+
+                if not cleaned_values:
+
+                    continue
+
+                normalized[
+                    key
+                ] = cleaned_values
+
+            else:
+
+                normalized[
+                    key
+                ] = value
 
         return normalized
 
@@ -267,9 +439,13 @@ class HybridRetriever:
                 doc
             )
 
-            documents[key] = doc
+            documents[
+                key
+            ] = doc
 
-            scores[key] = (
+            scores[
+                key
+            ] = (
 
                 scores.get(
                     key,
@@ -307,9 +483,13 @@ class HybridRetriever:
                 doc
             )
 
-            documents[key] = doc
+            documents[
+                key
+            ] = doc
 
-            scores[key] = (
+            scores[
+                key
+            ] = (
 
                 scores.get(
                     key,
@@ -350,7 +530,9 @@ class HybridRetriever:
         return [
 
             (
-                documents[key],
+                documents[
+                    key
+                ],
 
                 score
 
@@ -387,8 +569,11 @@ class HybridRetriever:
         """
 
         metadata = (
+
             doc.metadata
+
             or {}
+
         )
 
         return (
@@ -413,3 +598,7 @@ class HybridRetriever:
             doc.page_content.strip()
 
         )
+
+
+
+    

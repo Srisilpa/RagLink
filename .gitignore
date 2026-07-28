@@ -21,3 +21,4 @@ data/chunks.pkl
 # Generated RAG data
 data/
 
+chroma_db_backup/
