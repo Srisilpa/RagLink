@@ -15,85 +15,60 @@ class HybridRetriever:
 
     Pipeline:
 
-        Semantic Retrieval
-                +
-        BM25 Keyword Retrieval
-                ↓
-        Reciprocal Rank Fusion (RRF)
-                ↓
+        Query Plan
+             |
+             |
+        Multiple Queries
+             |
+             |
+    Semantic Retrieval + BM25 Retrieval
+             |
+             |
+        Reciprocal Rank Fusion
+             |
+             |
         Candidate Pool
-                ↓
-        Cross-Encoder Reranking
 
     Supports:
 
-        1. No metadata filtering
-
-            filters={}
-
-        2. Single-domain filtering
-
-            filters={
-                "document_type": "project"
-            }
-
-        3. Multi-domain filtering
-
-            filters={
-                "document_type": [
-                    "project",
-                    "infrastructure"
-                ]
-            }
-
-    Important:
-
-        The semantic and BM25 retrievers are responsible
-        for applying the actual metadata filtering.
-
-        This class only normalises the filter structure
-        and passes it to both retrieval systems.
+        - Semantic search
+        - BM25 search
+        - Multi query retrieval
+        - Multi domain filtering
+        - Metadata filtering
     """
+
 
     def __init__(
         self,
         rrf_k: int = 60
     ):
 
-        # ==========================================
-        # SEMANTIC RETRIEVER
-        # ==========================================
-
         self.semantic = SemanticRetriever()
 
-        # ==========================================
-        # BM25 RETRIEVER
-        # ==========================================
-
         self.bm25 = BM25Retriever()
-
-        # ==========================================
-        # RRF CONSTANT
-        # ==========================================
 
         self.rrf_k = rrf_k
 
 
+
     # ==============================================
-# RELOAD BM25 INDEX
-# ==============================================
+    # RELOAD BM25 INDEX
+    # ==============================================
 
     def reload_bm25(self):
 
         print(
-        "\nReloading BM25 index..."
+            "\nReloading BM25 index..."
         )
 
         self.bm25 = BM25Retriever()
 
         print(
-        "BM25 index reloaded successfully."
+            "BM25 index reloaded successfully."
         )
+
+
 
     # ==============================================
     # SEARCH
@@ -103,47 +78,39 @@ class HybridRetriever:
         self,
         query: str,
         top_k: int = 20,
-        filters: dict = None
+        filters: dict = None,
+        retrieval_plan: dict = None
     ):
         """
-        Perform hybrid retrieval.
+        Hybrid search.
 
-        Examples:
+        Supports:
 
-        ------------------------------------------------
-        No filter
-        ------------------------------------------------
+        Normal:
 
-            filters={}
+            search(
+                query="AWS architecture"
+            )
 
-        This searches across all indexed documents.
 
-        ------------------------------------------------
-        Single domain
-        ------------------------------------------------
+        Planned retrieval:
 
-            filters={
-                "document_type": "project"
+            retrieval_plan={
+                "search_queries":[
+                    "Project Meridian",
+                    "AWS infrastructure"
+                ],
+
+                "metadata_filters":{
+                    "document_type":[
+                        "project",
+                        "infrastructure"
+                    ]
+                }
             }
 
-        ------------------------------------------------
-        Multiple domains
-        ------------------------------------------------
-
-            filters={
-                "document_type": [
-                    "project",
-                    "infrastructure"
-                ]
-            }
-
-        The multi-domain filter is passed to both
-        semantic and BM25 retrieval.
         """
 
-        # ==========================================
-        # VALIDATE QUERY
-        # ==========================================
 
         if not query or not query.strip():
 
@@ -151,15 +118,15 @@ class HybridRetriever:
                 "Query cannot be empty."
             )
 
-        # ==========================================
-        # VALIDATE TOP_K
-        # ==========================================
+
 
         if top_k <= 0:
 
             raise ValueError(
                 "top_k must be greater than 0."
             )
+
+
 
         # ==========================================
         # NORMALIZE FILTERS
@@ -169,9 +136,53 @@ class HybridRetriever:
             filters
         )
 
+
+
         # ==========================================
-        # DEBUG FILTERS
+        # RETRIEVAL PLAN SUPPORT
         # ==========================================
+
+        search_queries = [
+            query
+        ]
+
+
+        if retrieval_plan:
+
+
+            planned_queries = retrieval_plan.get(
+                "search_queries",
+                []
+            )
+
+
+            if planned_queries:
+
+                search_queries = list(
+                    dict.fromkeys(
+                        planned_queries
+                    )
+                )
+
+
+
+            planned_filters = retrieval_plan.get(
+                "metadata_filters",
+                {}
+            )
+
+
+            if planned_filters:
+
+                filters.update(
+
+                    self._normalize_filters(
+                        planned_filters
+                    )
+
+                )
+
+
 
         print(
             "\n"
@@ -187,7 +198,7 @@ class HybridRetriever:
         )
 
         print(
-            f"Query: {query}"
+            f"Queries: {search_queries}"
         )
 
         print(
@@ -198,24 +209,28 @@ class HybridRetriever:
             "=" * 60
         )
 
-        # ==========================================
-        # CANDIDATE POOL SIZE
-        # ==========================================
+
 
         candidate_k = max(
             top_k,
             20
         )
 
+
+
         # ==========================================
         # SEMANTIC RETRIEVAL
         # ==========================================
 
-        semantic_results = (
+        semantic_results = []
 
-            self.semantic.retrieve(
 
-                query=query,
+        for search_query in search_queries:
+
+
+            results = self.semantic.retrieve(
+
+                query=search_query,
 
                 return_k=candidate_k,
 
@@ -225,22 +240,33 @@ class HybridRetriever:
 
             )
 
-        )
+
+            semantic_results.extend(
+                results
+            )
+
+
 
         print(
             f"Semantic Results: "
             f"{len(semantic_results)}"
         )
 
+
+
         # ==========================================
         # BM25 RETRIEVAL
         # ==========================================
 
-        bm25_results = (
+        bm25_results = []
 
-            self.bm25.retrieve(
 
-                query=query,
+        for search_query in search_queries:
+
+
+            results = self.bm25.retrieve(
+
+                query=search_query,
 
                 top_k=candidate_k,
 
@@ -248,12 +274,33 @@ class HybridRetriever:
 
             )
 
-        )
+
+            bm25_results.extend(
+                results
+            )
+
 
         print(
             f"BM25 Results: "
             f"{len(bm25_results)}"
         )
+
+
+
+        # ==========================================
+        # REMOVE DUPLICATES
+        # ==========================================
+
+        semantic_results = self._remove_duplicates(
+            semantic_results
+        )
+
+
+        bm25_results = self._remove_duplicates(
+            bm25_results
+        )
+
+
 
         # ==========================================
         # RRF FUSION
@@ -269,14 +316,17 @@ class HybridRetriever:
 
         )
 
+
         print(
             f"Hybrid Candidates: "
             f"{len(fused_results)}"
         )
 
+
         return fused_results
 
-    # ==============================================
+
+        # ==============================================
     # NORMALIZE FILTERS
     # ==============================================
 
@@ -302,31 +352,17 @@ class HybridRetriever:
             {
                 "document_type": [
                     "project",
-                    "company"
+                    "infrastructure"
                 ]
             }
 
-        Empty filters mean:
-
-            Do not apply metadata filtering.
-
-        Lists are preserved because the underlying
-        retrievers must decide how to translate
-        multi-value filters into their respective
-        database/search operations.
         """
-
-        # ==========================================
-        # NO FILTERS
-        # ==========================================
 
         if not filters:
 
             return {}
 
-        # ==========================================
-        # VALIDATE FILTER TYPE
-        # ==========================================
+
 
         if not isinstance(
             filters,
@@ -337,32 +373,36 @@ class HybridRetriever:
                 "filters must be a dictionary."
             )
 
+
+
         normalized = {}
 
-        # ==========================================
-        # PROCESS FILTERS
-        # ==========================================
+
 
         for key, value in filters.items():
 
-            # --------------------------------------
-            # IGNORE EMPTY VALUES
-            # --------------------------------------
+
+
+            # Ignore empty values
 
             if value is None:
 
                 continue
 
+
             if value == "":
 
                 continue
+
+
+
+            # Handle list filters
 
             if isinstance(
                 value,
                 list
             ):
 
-                # Remove empty values
 
                 cleaned_values = [
 
@@ -375,24 +415,80 @@ class HybridRetriever:
 
                 ]
 
-                # Empty list means:
-                # no restriction
 
-                if not cleaned_values:
 
-                    continue
+                if cleaned_values:
 
-                normalized[
-                    key
-                ] = cleaned_values
+                    normalized[key] = cleaned_values
+
+
 
             else:
 
-                normalized[
-                    key
-                ] = value
+
+                normalized[key] = value
+
+
 
         return normalized
+
+
+
+
+    # ==============================================
+    # REMOVE DUPLICATES
+    # ==============================================
+
+    def _remove_duplicates(
+        self,
+        results
+    ):
+        """
+        Remove duplicate chunks.
+
+        Prevents repeated results when
+        multiple expanded queries retrieve
+        the same document chunk.
+        """
+
+
+        seen = set()
+
+
+        cleaned = []
+
+
+
+        for item in results:
+
+
+            doc = item[0]
+
+
+            key = self._document_key(
+                doc
+            )
+
+
+            if key not in seen:
+
+
+                seen.add(
+                    key
+                )
+
+
+                cleaned.append(
+                    item
+                )
+
+
+
+        return cleaned
+
+
+
+
 
     # ==============================================
     # RRF FUSION
@@ -405,24 +501,27 @@ class HybridRetriever:
         top_k=20
     ):
         """
-        Combine semantic and BM25 results
-        using Reciprocal Rank Fusion.
+        Reciprocal Rank Fusion.
 
-        RRF Score:
+        Formula:
 
+            score =
             1 / (rrf_k + rank)
 
-        If a document appears in both
-        retrievers, its scores are combined.
+        Documents appearing in both
+        retrievers get higher ranking.
         """
+
 
         scores = {}
 
         documents = {}
 
-        # ==========================================
-        # PROCESS SEMANTIC RESULTS
-        # ==========================================
+
+
+        # ------------------------------------------
+        # Semantic Results
+        # ------------------------------------------
 
         for rank, (
             doc,
@@ -435,17 +534,19 @@ class HybridRetriever:
 
         ):
 
+
+
             key = self._document_key(
                 doc
             )
 
-            documents[
-                key
-            ] = doc
 
-            scores[
-                key
-            ] = (
+
+            documents[key] = doc
+
+
+
+            scores[key] = (
 
                 scores.get(
                     key,
@@ -454,19 +555,23 @@ class HybridRetriever:
 
                 +
 
-                1.0
-                /
                 (
-                    self.rrf_k
-                    +
-                    rank
+                    1.0
+                    /
+                    (
+                        self.rrf_k
+                        +
+                        rank
+                    )
                 )
 
             )
 
-        # ==========================================
-        # PROCESS BM25 RESULTS
-        # ==========================================
+
+
+        # ------------------------------------------
+        # BM25 Results
+        # ------------------------------------------
 
         for rank, (
             doc,
@@ -479,17 +584,18 @@ class HybridRetriever:
 
         ):
 
+
             key = self._document_key(
                 doc
             )
 
-            documents[
-                key
-            ] = doc
 
-            scores[
-                key
-            ] = (
+
+            documents[key] = doc
+
+
+
+            scores[key] = (
 
                 scores.get(
                     key,
@@ -498,19 +604,23 @@ class HybridRetriever:
 
                 +
 
-                1.0
-                /
                 (
-                    self.rrf_k
-                    +
-                    rank
+                    1.0
+                    /
+                    (
+                        self.rrf_k
+                        +
+                        rank
+                    )
                 )
 
             )
 
-        # ==========================================
-        # SORT BY RRF SCORE
-        # ==========================================
+
+
+        # ------------------------------------------
+        # SORT
+        # ------------------------------------------
 
         ranked = sorted(
 
@@ -523,16 +633,12 @@ class HybridRetriever:
 
         )
 
-        # ==========================================
-        # RETURN RESULTS
-        # ==========================================
+
 
         return [
 
             (
-                documents[
-                    key
-                ],
+                documents[key],
 
                 score
 
@@ -540,11 +646,84 @@ class HybridRetriever:
 
             for key, score
 
-            in ranked[
-                :top_k
-            ]
+            in ranked[:top_k]
 
         ]
+
+
+        # ============================================================
+    # MULTI QUERY SEARCH
+    # ============================================================
+
+    def search_multiple(
+        self,
+        queries,
+        top_k=5,
+        filters=None,
+    ):
+        """
+        Hybrid retrieval for multiple queries.
+
+        Used by LangGraph retrieval node.
+        """
+
+        if not queries:
+
+            return []
+
+
+        all_results = []
+
+
+        for query in queries:
+
+            results = self.search(
+
+                query=query,
+
+                top_k=top_k,
+
+                filters=filters,
+
+            )
+
+            all_results.extend(
+                results
+            )
+
+
+        # Remove duplicate chunks
+
+        unique_results = []
+
+        seen = set()
+
+
+        for doc, score in all_results:
+
+
+            key = self._document_key(
+                doc
+            )
+
+
+            if key in seen:
+
+                continue
+
+
+            seen.add(key)
+
+
+            unique_results.append(
+                (
+                    doc,
+                    score
+                )
+            )
+
+
+        return unique_results[:top_k]
 
     # ==============================================
     # DOCUMENT IDENTITY
@@ -555,18 +734,9 @@ class HybridRetriever:
         doc
     ):
         """
-        Generate stable document identity.
-
-        Uses:
-
-            source
-            page
-            chunk_id
-            content
-
-        This prevents accidental merging
-        of different chunks.
+        Stable chunk identity.
         """
+
 
         metadata = (
 
@@ -576,12 +746,14 @@ class HybridRetriever:
 
         )
 
+
         return (
 
             metadata.get(
                 "source",
                 ""
             ),
+
 
             str(
                 metadata.get(
@@ -590,15 +762,13 @@ class HybridRetriever:
                 )
             ),
 
+
             metadata.get(
                 "chunk_id",
                 ""
             ),
 
+
             doc.page_content.strip()
 
         )
-
-
-
-    

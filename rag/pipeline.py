@@ -1,10 +1,48 @@
-from rag.retrieval.hybrid import HybridRetriever
-from rag.retrieval.rerank import Reranker
+from rag.query_understanding.query_understanding import (
+    QueryUnderstanding,
+)
 
-from rag.generation.context import build_context
-from rag.generation.prompt import build_prompt
-from rag.generation.llm import LLM
-from rag.generation.query_rewriter import QueryRewriter
+
+from rag.retrieval.retrieval_planner import (
+    build_retrieval_plan,
+)
+
+
+from rag.retrieval.hybrid import (
+    HybridRetriever,
+)
+
+
+from rag.retrieval.rerank import (
+    Reranker,
+)
+
+
+from rag.generation.context import (
+    build_context,
+)
+
+
+from rag.generation.prompt import (
+    build_prompt,
+)
+
+
+from rag.generation.llm import (
+    LLM,
+)
+
+
+from rag.generation.evidence_checker import (
+    detect_hallucination,
+    build_safe_response,
+)
+
+
+from rag.generation.citation import (
+    build_sources,
+)
+
 
 
 FALLBACK_ANSWER = (
@@ -13,186 +51,76 @@ FALLBACK_ANSWER = (
 )
 
 
+
+
+
 class RAGPipeline:
+
 
     def __init__(self):
 
-        # --------------------------------
-        # Query Rewriter
-        # --------------------------------
 
-        self.query_rewriter = QueryRewriter()
+        self.query_understanding = (
+            QueryUnderstanding()
+        )
 
-        # --------------------------------
-        # Hybrid Retriever
-        # --------------------------------
 
         self.hybrid = HybridRetriever()
 
-        # --------------------------------
-        # Cross Encoder Reranker
-        # --------------------------------
 
         self.reranker = Reranker()
 
-        # --------------------------------
-        # LLM
-        # --------------------------------
 
         self.llm = LLM()
 
-    # ==========================================
-    # GENERATE
-    # ==========================================
 
-    def generate(
-        self,
-        prompt: str
-    ):
 
-        if not prompt or not prompt.strip():
 
-            raise ValueError(
-                "Prompt cannot be empty."
-            )
 
-        return self.llm.generate(
-            prompt
-        )
-
-    # ==========================================
+    # ======================================
     # CLEAN ANSWER
-    # ==========================================
+    # ======================================
+
 
     def clean_answer(
         self,
         answer: str
     ):
-        """
-        Cleans unwanted fallback text that the LLM may
-        accidentally append to an otherwise valid answer.
-        """
+
 
         if not answer:
+
             return FALLBACK_ANSWER
+
+
 
         answer = answer.strip()
 
-        # ------------------------------------------
-        # Fallback variants
-        # ------------------------------------------
 
-        fallback_variants = [
-
-            "I couldn't find that information "
-            "in the company knowledge base.",
-
-            "I could not find that information "
-            "in the company knowledge base.",
-
-            "I couldn't find that information "
-            "in the company knowledge base",
-
-            "I could not find that information "
-            "in the company knowledge base"
-
-        ]
-
-        # ------------------------------------------
-        # Check whether the answer contains fallback
-        # ------------------------------------------
-
-        answer_lower = answer.lower()
-
-        for fallback in fallback_variants:
-
-            fallback_lower = fallback.lower()
-
-            if fallback_lower in answer_lower:
-
-                # ----------------------------------
-                # Find fallback position
-                # ----------------------------------
-
-                fallback_position = (
-                    answer_lower.find(
-                        fallback_lower
-                    )
-                )
-
-                # ----------------------------------
-                # Text before fallback
-                # ----------------------------------
-
-                before_fallback = (
-                    answer[
-                        :fallback_position
-                    ].strip()
-                )
-
-                # ----------------------------------
-                # If meaningful answer exists,
-                # remove the appended fallback.
-                # ----------------------------------
-
-                if before_fallback:
-
-                    answer = before_fallback
-
-                else:
-
-                    answer = FALLBACK_ANSWER
-
-                break
-
-        # ==========================================
-        # REMOVE UNNECESSARY PREFIXES
-        # ==========================================
-
-        unwanted_prefixes = [
-
-            "ANSWER:",
-
-            "Answer:",
-
-            "ANSWER :",
-
-            "Answer :"
-
-        ]
-
-        for prefix in unwanted_prefixes:
-
-            if answer.startswith(prefix):
-
-                answer = answer[
-                    len(prefix):
-                ].strip()
-
-                break
-
-        # ==========================================
-        # FINAL FALLBACK
-        # ==========================================
 
         if not answer:
 
             return FALLBACK_ANSWER
 
+
+
         return answer
 
-    # ==========================================
+
+
+
+
+
+    # ======================================
     # ASK
-    # ==========================================
+    # ======================================
+
 
     def ask(
         self,
         question: str
     ):
 
-        # --------------------------------
-        # VALIDATE QUESTION
-        # --------------------------------
 
         if not question or not question.strip():
 
@@ -200,65 +128,250 @@ class RAGPipeline:
                 "Question cannot be empty."
             )
 
-        # --------------------------------
-        # CLEAN QUESTION
-        # --------------------------------
+
 
         question = question.strip()
 
-        # ==========================================
-        # 1. QUERY REWRITING
-        # ==========================================
 
-        rewritten_question = (
-            self.query_rewriter.rewrite(
+
+        # ======================================
+        # 1. QUERY UNDERSTANDING
+        # ======================================
+
+
+        understanding = (
+
+            self.query_understanding
+
+            .understand(
+
                 question
+
             )
+
         )
+
+
+
+        rewritten_query = (
+
+            understanding.get(
+
+                "rewritten_query",
+
+                question
+
+            )
+
+        )
+
+
+
+        entities = (
+
+            understanding.get(
+
+                "entities",
+
+                []
+
+            )
+
+        )
+
+
+
+        intent = (
+
+            understanding.get(
+
+                "intent",
+
+                "general_information"
+
+            )
+
+        )
+
+
+
+        expanded_queries = (
+
+            understanding.get(
+
+                "expanded_queries",
+
+                []
+
+            )
+
+        )
+
+
 
         print(
             f"Original Query: {question}"
         )
 
-        print(
-            f"Rewritten Query: {rewritten_question}"
-        )
-
-        # ==========================================
-        # 2. HYBRID RETRIEVAL
-        # ==========================================
-
-        retrieved = self.hybrid.search(
-
-            rewritten_question,
-
-            top_k=15
-
-        )
 
         print(
-            f"Retrieved: {len(retrieved)}"
+            f"Rewritten Query: {rewritten_query}"
         )
 
-        # ==========================================
-        # 3. EXTRACT DOCUMENTS
-        # ==========================================
 
-        documents = [
+        print(
+            f"Entities: {entities}"
+        )
 
-            document
 
-            for document, score
+        print(
+            f"Intent: {intent}"
+        )
 
-            in retrieved
 
-        ]
 
-        # ==========================================
-        # 4. NO DOCUMENTS
-        # ==========================================
+        # ======================================
+        # 2. RETRIEVAL PLANNING
+        # ======================================
 
-        if not documents:
+
+        retrieval_plan = build_retrieval_plan(
+
+            query=question,
+
+            rewritten_query=rewritten_query,
+
+            entities=entities,
+
+            expanded_queries=expanded_queries,
+
+            intent=intent,
+
+        )
+
+
+
+        print(
+            "Retrieval Plan:"
+        )
+
+
+        print(
+            retrieval_plan
+        )
+
+
+                # ======================================
+        # 3. HYBRID RETRIEVAL
+        # ======================================
+
+
+        retrieved_documents = []
+
+
+        for search_query in retrieval_plan.get(
+            "search_queries",
+            []
+        ):
+
+
+            results = self.hybrid.search(
+
+                query=search_query,
+
+                top_k=retrieval_plan.get(
+                    "top_k",
+                    15
+                ),
+
+                filters=retrieval_plan.get(
+                    "metadata_filters",
+                    {}
+
+                )
+
+            )
+
+
+            retrieved_documents.extend(
+                results
+            )
+
+
+
+        print(
+            f"Retrieved candidates: "
+            f"{len(retrieved_documents)}"
+        )
+
+
+
+        # ======================================
+        # REMOVE DUPLICATES
+        # ======================================
+
+
+        unique_documents = []
+
+
+        seen = set()
+
+
+
+        for item in retrieved_documents:
+
+
+            if isinstance(item, tuple):
+
+                document, score = item
+
+            else:
+
+                document = item
+
+                score = 0.0
+
+
+
+            key = (
+
+                document.metadata.get(
+                    "source",
+                    ""
+                ),
+
+                document.page_content.strip()
+
+            )
+
+
+
+            if key in seen:
+
+                continue
+
+
+
+            seen.add(key)
+
+
+
+            unique_documents.append(
+
+                (
+                    document,
+
+                    score
+
+                )
+
+            )
+
+
+
+
+        if not unique_documents:
+
 
             return {
 
@@ -276,29 +389,44 @@ class RAGPipeline:
 
             }
 
-        # ==========================================
-        # 5. RERANKING
-        # ==========================================
+
+
+
+
+        # ======================================
+        # 4. RERANK
+        # ======================================
+
 
         reranked = self.reranker.rerank(
 
-            query=rewritten_question,
+            query=rewritten_query,
 
-            documents=documents,
+            documents=unique_documents,
 
-            top_k=10
+            top_k=10,
+
+            entities=entities,
+
+            intent=intent
 
         )
+
+
 
         print(
-            f"Reranked: {len(reranked)}"
+            f"Reranked documents: {len(reranked)}"
         )
 
-        # ==========================================
-        # 6. CONTEXT COMPRESSION
-        # ==========================================
 
-        context, selected = build_context(
+
+
+                # ======================================
+        # 5. CONTEXT BUILDING
+        # ======================================
+
+
+        context_result = build_context(
 
             ranked_documents=reranked,
 
@@ -308,36 +436,124 @@ class RAGPipeline:
 
         )
 
+
+
+        selected = []
+
+
+
+        # --------------------------------------
+        # Handle different build_context outputs
+        # --------------------------------------
+
+
+        if isinstance(
+            context_result,
+            tuple
+        ):
+
+
+            context, selected = context_result
+
+
+
+        else:
+
+
+            selected = context_result
+
+
+
+            context_parts = []
+
+
+
+            for item in selected:
+
+
+
+                if isinstance(
+                    item,
+                    tuple
+                ):
+
+
+                    document = item[0]
+
+
+
+                else:
+
+
+                    document = item
+
+
+
+                context_parts.append(
+
+                    document.page_content
+
+                )
+
+
+
+            context = "\n\n".join(
+
+                context_parts
+
+            )
+
+
+
+
         print(
-            f"Final Context Chunks: "
-            f"{len(selected)}"
+            "Context built successfully"
         )
 
-        # ==========================================
-        # 7. NO USEFUL CONTEXT
-        # ==========================================
+
+
+        print(
+            f"Context length: {len(context)}"
+        )
+
+
+
 
         if not selected:
 
+
             return {
 
+
                 "question":
+
                     question,
 
+
                 "answer":
+
                     FALLBACK_ANSWER,
 
+
                 "sources":
+
                     [],
 
+
                 "chunks":
+
                     []
 
             }
 
-        # ==========================================
-        # 8. BUILD PROMPT
-        # ==========================================
+
+
+
+
+        # ======================================
+        # 6. GENERATION
+        # ======================================
+
 
         prompt = build_prompt(
 
@@ -347,109 +563,247 @@ class RAGPipeline:
 
         )
 
-        # ==========================================
-        # 9. GENERATE ANSWER
-        # ==========================================
+
 
         answer = self.llm.generate(
+
             prompt
+
         )
 
-        # ==========================================
-        # 10. CLEAN ANSWER
-        # ==========================================
+
 
         answer = self.clean_answer(
+
             answer
+
         )
 
-        # ==========================================
-        # 11. PREPARE CHUNKS AND SOURCES
-        # ==========================================
+
+
+        # ======================================
+        # 7. EVIDENCE VERIFICATION
+        # ======================================
+
+
+        unsupported = detect_hallucination(
+
+            answer,
+
+            context
+
+        )
+
+
+
+        if unsupported:
+
+
+            print(
+                "⚠️ Answer failed grounding check."
+            )
+
+
+            answer = build_safe_response()
+
+
+                    # ======================================
+        # 8. BUILD SOURCES
+        # ======================================
+
+
+        source_documents = []
+
+
+
+        for item in selected:
+
+
+            # Case 1:
+            # (Document, score)
+
+            if isinstance(
+                item,
+                tuple
+            ):
+
+                source_documents.append(
+                    item[0]
+                )
+
+
+            # Case 2:
+            # Direct Document
+
+            else:
+
+                source_documents.append(
+                    item
+                )
+
+
+
+        sources = build_sources(
+
+            source_documents
+
+        )
+
+
+
+        # fallback source creation
+        # if citation builder returns empty
+
+        if not sources:
+
+
+            sources = []
+
+
+            for document in source_documents:
+
+
+                sources.append(
+
+                    {
+
+                        "source":
+                            document.metadata.get(
+                                "source",
+                                "unknown"
+                            ),
+
+
+                        "page":
+                            document.metadata.get(
+                                "page",
+                                None
+                            )
+
+                    }
+
+                )
+
+
+
+
+
+        # ======================================
+        # 9. BUILD CHUNKS
+        # ======================================
+
 
         chunks = []
 
-        sources = []
 
-        for document, score in selected:
 
-            # --------------------------------------
-            # SOURCE
-            # --------------------------------------
+        for item in selected:
 
-            source = document.metadata.get(
-                "source"
-            )
 
-            # --------------------------------------
-            # PAGE
-            # --------------------------------------
+            if isinstance(
+                item,
+                tuple
+            ):
 
-            page = document.metadata.get(
-                "page"
-            )
 
-            # --------------------------------------
-            # PREPARE CHUNK
-            # --------------------------------------
+                document = item[0]
+
+                score = item[1]
+
+
+
+            else:
+
+
+                document = item
+
+                score = 0.0
+
+
+
 
             chunks.append(
 
                 {
 
                     "content":
+
                         document.page_content,
 
+
+
                     "source":
-                        source,
+
+                        document.metadata.get(
+
+                            "source"
+
+                        ),
+
+
 
                     "page":
-                        page,
+
+                        document.metadata.get(
+
+                            "page"
+
+                        ),
+
+
 
                     "score":
+
                         round(
+
                             float(score),
+
                             4
+
                         )
 
                 }
 
             )
 
-            # --------------------------------------
-            # ADD UNIQUE SOURCE
-            # --------------------------------------
 
-            if (
 
-                source
 
-                and
 
-                source not in sources
+        # ======================================
+        # FINAL RESPONSE
+        # ======================================
 
-            ):
-
-                sources.append(
-                    source
-                )
-
-        # ==========================================
-        # 12. RETURN RESULT
-        # ==========================================
 
         return {
 
+
             "question":
+
                 question,
 
+
+
             "answer":
+
                 answer,
 
+
+
             "sources":
+
                 sources,
 
+
+
             "chunks":
-                chunks
+
+                chunks,
+
+
+
+            "grounded":
+
+                not unsupported
 
         }

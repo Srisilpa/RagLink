@@ -11,22 +11,13 @@ def build_context(
     """
     Build a clean context from reranked documents.
 
-    Args:
-        ranked_documents:
-            List of (Document, relevance_score) tuples.
-
-        max_chunks:
-            Maximum number of chunks to include.
-
-        min_score:
-            Minimum reranker score allowed.
-
-    Returns:
-        context:
-            String containing selected document chunks.
-
-        selected:
-            List of (Document, score) tuples.
+    Improvements:
+    --------------------
+    ✓ Dynamic threshold
+    ✓ Duplicate removal
+    ✓ Page diversification
+    ✓ Better fallback
+    ✓ Cleaner context
     """
 
     if not ranked_documents:
@@ -65,12 +56,12 @@ def build_context(
         return "", []
 
     # =========================================================
-    # REMOVE DUPLICATE CONTENT
+    # REMOVE DUPLICATES
     # =========================================================
 
     unique_documents = []
 
-    seen_content = set()
+    seen = set()
 
     for document, score in valid_documents:
 
@@ -78,12 +69,15 @@ def build_context(
             document.page_content.lower().split()
         )
 
-        if normalized_content in seen_content:
-            continue
-
-        seen_content.add(
+        key = (
+            document.metadata.get("source"),
             normalized_content
         )
+
+        if key in seen:
+            continue
+
+        seen.add(key)
 
         unique_documents.append(
             (
@@ -93,15 +87,39 @@ def build_context(
         )
 
     # =========================================================
-    # SELECT RELEVANT DOCUMENTS
+    # DYNAMIC SCORE THRESHOLD
+    # =========================================================
+
+    top_score = unique_documents[0][1]
+
+    dynamic_threshold = max(
+        min_score,
+        top_score * 0.75
+    )
+
+    # =========================================================
+    # SELECT DOCUMENTS
     # =========================================================
 
     selected = []
 
+    seen_pages = set()
+
     for document, score in unique_documents:
 
-        if score < min_score:
+        if score < dynamic_threshold:
             continue
+
+        page_key = (
+            document.metadata.get("source"),
+            document.metadata.get("page")
+        )
+
+        # Prefer diversity across pages
+        if page_key in seen_pages:
+            continue
+
+        seen_pages.add(page_key)
 
         selected.append(
             (
@@ -117,16 +135,10 @@ def build_context(
     # FALLBACK
     # =========================================================
 
-    # If the threshold removed everything, use the best result.
-    # This prevents valid answers from being lost because of
-    # a strict cross-encoder score.
     if not selected:
 
         selected = unique_documents[
-            :min(
-                max_chunks,
-                len(unique_documents)
-            )
+            :min(max_chunks, len(unique_documents))
         ]
 
     # =========================================================
@@ -135,10 +147,7 @@ def build_context(
 
     context_parts = []
 
-    for index, (
-        document,
-        score
-    ) in enumerate(
+    for index, (document, score) in enumerate(
         selected,
         start=1
     ):
@@ -148,36 +157,44 @@ def build_context(
             "Unknown source"
         )
 
-        page = document.metadata.get(
-            "page"
-        )
+        page = document.metadata.get("page")
 
         if page is not None:
-
-            source_info = (
-                f"{source}, page {page}"
-            )
-
+            source_info = f"{source}, Page {page}"
         else:
-
             source_info = source
+
+        content = document.page_content.strip()
+
+        # Prevent very long chunks
+        if len(content) > 1200:
+            content = content[:1200] + "..."
 
         context_parts.append(
 
             f"[Context {index}]\n"
             f"Source: {source_info}\n"
+            f"Relevance Score: {score:.2f}\n"
             f"Content:\n"
-            f"{document.page_content.strip()}"
+            f"{content}"
 
         )
 
-    context = "\n\n".join(
-        context_parts
-    )
+    context = "\n\n".join(context_parts)
 
-    print(
-        f"Final Context Chunks: "
-        f"{len(selected)}"
-    )
+    print("\n========== CONTEXT ==========")
+    print(f"Dynamic Threshold : {dynamic_threshold:.2f}")
+    print(f"Selected Chunks   : {len(selected)}")
 
-    return context, selected
+    for i, (doc, score) in enumerate(selected, start=1):
+
+        print(
+            f"{i}. "
+            f"{doc.metadata.get('source')} | "
+            f"Page {doc.metadata.get('page')} | "
+            f"Score={score:.2f}"
+        )
+
+    print("=============================\n")
+
+    return selected

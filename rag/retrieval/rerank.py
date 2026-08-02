@@ -5,99 +5,140 @@ from langchain_core.documents import Document
 from sentence_transformers import CrossEncoder
 
 
+
 class Reranker:
     """
-    Cross-encoder document reranker.
+    Cross Encoder + Entity Aware Reranker.
 
-    Takes documents returned by the hybrid retriever
-    and reorders them based on query-document relevance.
+    Ranking signals:
 
-    Input can be:
-
-        Document
-
-    or:
-
-        (Document, retrieval_score)
-
-    Output:
-
-        [
-            (Document, rerank_score),
-            ...
-        ]
-
-    The rerank_score is produced by the CrossEncoder.
+    1. CrossEncoder relevance score
+    2. Entity match boost
+    3. Intent match boost
     """
+
+
 
     def __init__(
         self,
-        model_name: str = (
-            "cross-encoder/ms-marco-MiniLM-L-6-v2"
-        )
+        model_name: str =
+        "cross-encoder/ms-marco-MiniLM-L-6-v2"
     ):
 
-        # ==========================================
-        # MODEL NAME
-        # ==========================================
-
         self.model_name = model_name
-
-        # ==========================================
-        # LOAD CROSS ENCODER
-        # ==========================================
 
         self.model = CrossEncoder(
             self.model_name
         )
 
+
+
     # ==========================================
-    # RERANK DOCUMENTS
+    # NORMALIZE ENTITIES
     # ==========================================
+
+    def normalize_entities(
+        self,
+        entities
+    ):
+
+        """
+        Converts:
+
+        [
+            {
+              "mention":"Project Meridian",
+              "canonical_name":"Project Meridian",
+              "entity_type":"project"
+            }
+        ]
+
+        into:
+
+        [
+            "Project Meridian"
+        ]
+
+        """
+
+
+        if not entities:
+
+            return []
+
+
+        normalized = []
+
+
+        for entity in entities:
+
+
+            # dictionary entity
+
+            if isinstance(
+                entity,
+                dict
+            ):
+
+
+                value = (
+
+                    entity.get(
+                        "canonical_name"
+                    )
+
+                    or
+
+                    entity.get(
+                        "mention"
+                    )
+
+                )
+
+
+                if value:
+
+                    normalized.append(
+                        value
+                    )
+
+
+
+            # string entity
+
+            elif isinstance(
+                entity,
+                str
+            ):
+
+
+                normalized.append(
+                    entity
+                )
+
+
+
+        return normalized
+
+
+
+
+
+    # ==========================================
+    # RERANK
+    # ==========================================
+
 
     def rerank(
         self,
         query: str,
         documents: list,
-        top_k: int = 5
+        top_k: int = 5,
+        entities: List[str] = None,
+        intent: str = None
     ) -> List[Tuple[Document, float]]:
-        """
-        Rerank documents using a CrossEncoder.
 
-        Parameters
-        ----------
-        query : str
-            User query or rewritten query.
 
-        documents : list
-            List containing either:
-
-                Document
-
-            or:
-
-                (Document, retrieval_score)
-
-        top_k : int
-            Number of documents to return
-            after reranking.
-
-        Returns
-        -------
-        List[Tuple[Document, float]]
-
-            Example:
-
-            [
-                (document1, 8.52),
-                (document2, 7.91),
-                (document3, 6.84)
-            ]
-        """
-
-        # ==========================================
-        # VALIDATE QUERY
-        # ==========================================
 
         if not query or not query.strip():
 
@@ -105,51 +146,36 @@ class Reranker:
                 "Query cannot be empty."
             )
 
-        # ==========================================
-        # VALIDATE DOCUMENTS
-        # ==========================================
 
-        if documents is None:
-
-            raise ValueError(
-                "Documents cannot be None."
-            )
-
-        # ==========================================
-        # EMPTY DOCUMENT LIST
-        # ==========================================
 
         if not documents:
 
             return []
 
-        # ==========================================
-        # VALIDATE TOP K
-        # ==========================================
 
-        if top_k <= 0:
 
-            raise ValueError(
-                "top_k must be greater than 0."
-            )
+        # FIX ENTITY FORMAT
 
-        # ==========================================
-        # EXTRACT AND VALIDATE DOCUMENTS
-        # ==========================================
+        entities = self.normalize_entities(
+            entities
+        )
+
+
 
         valid_documents = []
 
         seen = set()
 
+
+
+        # ======================================
+        # CLEAN DOCUMENTS
+        # ======================================
+
+
         for item in documents:
 
-            # --------------------------------------
-            # SUPPORT BOTH FORMATS
-            #
-            # 1. Document
-            #
-            # 2. (Document, score)
-            # --------------------------------------
+
 
             if isinstance(
                 item,
@@ -158,13 +184,16 @@ class Reranker:
 
                 document = item[0]
 
-                # Original retrieval score
-                # from Hybrid Retriever
                 retrieval_score = (
+
                     item[1]
+
                     if len(item) > 1
+
                     else None
+
                 )
+
 
             else:
 
@@ -172,9 +201,8 @@ class Reranker:
 
                 retrieval_score = None
 
-            # --------------------------------------
-            # CHECK DOCUMENT TYPE
-            # --------------------------------------
+
+
 
             if not isinstance(
                 document,
@@ -183,37 +211,32 @@ class Reranker:
 
                 continue
 
-            # --------------------------------------
-            # CHECK PAGE CONTENT
-            # --------------------------------------
+
 
             if not document.page_content:
 
                 continue
+
+
 
             content = (
                 document.page_content
                 .strip()
             )
 
+
             if not content:
 
                 continue
 
-            # --------------------------------------
-            # GET METADATA
-            # --------------------------------------
+
 
             metadata = (
                 document.metadata
                 or {}
             )
 
-            # --------------------------------------
-            # DOCUMENT IDENTITY
-            #
-            # Used to remove duplicate chunks.
-            # --------------------------------------
+
 
             key = (
 
@@ -231,28 +254,17 @@ class Reranker:
 
             )
 
-            # --------------------------------------
-            # SKIP DUPLICATES
-            # --------------------------------------
+
 
             if key in seen:
 
                 continue
 
-            seen.add(
-                key
-            )
 
-            # --------------------------------------
-            # STORE ORIGINAL RETRIEVAL SCORE
-            #
-            # For example:
-            #
-            # RRF score
-            #
-            # This is useful for debugging
-            # and observability.
-            # --------------------------------------
+
+            seen.add(key)
+
+
 
             if retrieval_score is not None:
 
@@ -262,55 +274,62 @@ class Reranker:
                     retrieval_score
                 )
 
-            # --------------------------------------
-            # ADD VALID DOCUMENT
-            # --------------------------------------
+
 
             valid_documents.append(
                 document
             )
 
-        # ==========================================
-        # CHECK IF VALID DOCUMENTS EXIST
-        # ==========================================
+
 
         if not valid_documents:
 
             return []
 
-        # ==========================================
-        # CREATE QUERY-DOCUMENT PAIRS
-        # ==========================================
 
-        pairs = [
 
-            (
-                query,
-                document.page_content
+
+
+        # ======================================
+        # CROSS ENCODER
+        # ======================================
+
+
+        pairs = []
+
+
+        for doc in valid_documents:
+
+
+            pairs.append(
+
+                (
+                    query,
+
+                    doc.page_content
+
+                )
+
             )
 
-            for document
-            in valid_documents
 
-        ]
-
-        # ==========================================
-        # CROSS ENCODER PREDICTION
-        # ==========================================
 
         scores = self.model.predict(
-
             pairs,
-
             show_progress_bar=False
-
         )
 
-        # ==========================================
-        # CREATE SCORED DOCUMENT LIST
-        # ==========================================
+
 
         scored_documents = []
+
+
+
+
+        # ======================================
+        # FINAL SCORE
+        # ======================================
+
 
         for document, score in zip(
 
@@ -320,53 +339,109 @@ class Reranker:
 
         ):
 
-            # --------------------------------------
-            # CONVERT SCORE TO FLOAT
-            # --------------------------------------
 
-            score = float(
+            final_score = float(
                 score
             )
 
-            # --------------------------------------
-            # STORE RERANK SCORE IN METADATA
-            # --------------------------------------
+
+
+            content = (
+
+                document.page_content
+
+                .lower()
+
+            )
+
+
+
+            entity_bonus = 0.0
+
+
+
+            for entity in entities:
+
+
+                if entity.lower() in content:
+
+
+                    entity_bonus += 0.25
+
+
+
+
+            intent_bonus = 0.0
+
+
+
+            if intent:
+
+
+                if intent.lower() in content:
+
+                    intent_bonus += 0.05
+
+
+
+
+            final_score += (
+
+                entity_bonus
+
+                +
+
+                intent_bonus
+
+            )
+
+
 
             document.metadata[
-                "rerank_score"
-            ] = score
 
-            # --------------------------------------
-            # ADD DOCUMENT + SCORE
-            # --------------------------------------
+                "rerank_score"
+
+            ] = final_score
+
+
+
+            document.metadata[
+
+                "entity_bonus"
+
+            ] = entity_bonus
+
+
+
 
             scored_documents.append(
 
                 (
+
                     document,
-                    score
+
+                    final_score
+
                 )
 
             )
 
-        # ==========================================
-        # SORT BY RERANK SCORE
-        #
-        # Highest relevance first.
-        # ==========================================
+
+
+
+        # ======================================
+        # SORT
+        # ======================================
+
 
         scored_documents.sort(
 
-            key=lambda item: item[1],
+            key=lambda x:x[1],
 
             reverse=True
 
         )
 
-        # ==========================================
-        # RETURN TOP K DOCUMENTS
-        # ==========================================
 
-        return scored_documents[
-            :top_k
-        ]
+
+        return scored_documents[:top_k]

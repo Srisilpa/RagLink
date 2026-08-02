@@ -1,29 +1,22 @@
 """
-Entity normalisation for RAGLink.
+Enterprise Entity Normalizer for RAGLink.
 
-This module converts user-mentioned entity names into
-canonical entity names and domain types.
+This module maps user-mentioned entities to their
+canonical names and entity types.
 
-Examples:
+Unknown entities are ignored rather than being
+incorrectly classified.
 
-    Meridian
-        -> Project Meridian / project
-
-    AWS
-        -> AWS / infrastructure
-
-    Azure
-        -> Azure / infrastructure
-
-Unknown entities are NOT assigned an arbitrary domain.
-
-Important:
-This registry is intentionally conservative.
-It should eventually be populated dynamically from
-the indexed knowledge base.
+In production, this registry can be replaced with
+entities dynamically loaded from the indexed
+knowledge base.
 """
 
+import re
+
 from dataclasses import dataclass
+from typing import Dict
+from typing import List
 from typing import Optional
 
 
@@ -34,21 +27,22 @@ from typing import Optional
 @dataclass(frozen=True)
 class EntityInfo:
     """
-    Canonical information about a known entity.
+    Canonical information about an entity.
     """
 
     canonical_name: str
+
     entity_type: str
 
 
 # ============================================================
-# KNOWN ENTITY REGISTRY
+# ENTITY REGISTRY
 # ============================================================
 
-ENTITY_REGISTRY = {
+ENTITY_REGISTRY: Dict[str, EntityInfo] = {
 
     # --------------------------------------------------------
-    # PROJECTS
+    # Projects
     # --------------------------------------------------------
 
     "project meridian": EntityInfo(
@@ -62,21 +56,21 @@ ENTITY_REGISTRY = {
     ),
 
     # --------------------------------------------------------
-    # COMPANY
+    # Company
     # --------------------------------------------------------
-
-    "series tech limited": EntityInfo(
-        canonical_name="Series Tech Limited",
-        entity_type="company",
-    ),
 
     "series tech": EntityInfo(
         canonical_name="Series Tech Limited",
         entity_type="company",
     ),
 
+    "series tech limited": EntityInfo(
+        canonical_name="Series Tech Limited",
+        entity_type="company",
+    ),
+
     # --------------------------------------------------------
-    # INFRASTRUCTURE
+    # Infrastructure
     # --------------------------------------------------------
 
     "aws": EntityInfo(
@@ -98,119 +92,176 @@ ENTITY_REGISTRY = {
         canonical_name="Azure",
         entity_type="infrastructure",
     ),
+
 }
 
 
 # ============================================================
-# SINGLE ENTITY NORMALISATION
+# NORMALIZE TEXT
+# ============================================================
+
+def _normalize_text(
+    text: str,
+) -> str:
+    """
+    Normalize text before lookup.
+
+    Examples
+
+    Project-Meridian
+        ->
+    project meridian
+
+    AWS
+        ->
+    aws
+    """
+
+    text = text.lower()
+
+    text = re.sub(
+        r"[-_/]",
+        " ",
+        text,
+    )
+
+    text = re.sub(
+        r"\s+",
+        " ",
+        text,
+    )
+
+    return text.strip()
+
+
+# ============================================================
+# SINGLE ENTITY
 # ============================================================
 
 def normalise_entity(
     entity: str,
 ) -> Optional[EntityInfo]:
     """
-    Normalise a single entity mention.
-
-    Args:
-        entity:
-            Entity mentioned by the user.
-
-    Returns:
-        EntityInfo if the entity is known.
-        None if the entity is unknown.
+    Normalize one entity.
     """
 
-    if not entity:
+    if not isinstance(entity, str):
+
         return None
 
-    key = entity.strip().lower()
+    entity = entity.strip()
+
+    if not entity:
+
+        return None
+
+    key = _normalize_text(entity)
 
     return ENTITY_REGISTRY.get(key)
 
 
 # ============================================================
-# MULTIPLE ENTITY NORMALISATION
+# MULTIPLE ENTITIES
 # ============================================================
 
 def normalise_entities(
-    entities: list[str],
-) -> list[dict]:
+    entities: List[str],
+) -> List[dict]:
     """
-    Normalise multiple extracted entities.
+    Normalize multiple extracted entities.
 
-    Unknown entities are ignored instead of being
-    incorrectly assigned to a domain.
+    Returns
 
-    Example:
-
-        Input:
-            ["Meridian", "AWS", "Azure"]
-
-        Output:
-            [
-                {
-                    "mention": "Meridian",
-                    "canonical_name": "Project Meridian",
-                    "entity_type": "project",
-                },
-                {
-                    "mention": "AWS",
-                    "canonical_name": "AWS",
-                    "entity_type": "infrastructure",
-                },
-                {
-                    "mention": "Azure",
-                    "canonical_name": "Azure",
-                    "entity_type": "infrastructure",
-                },
-            ]
+    [
+        {
+            "mention": "...",
+            "canonical_name": "...",
+            "entity_type": "...",
+        }
+    ]
     """
 
-    normalised = []
+    if not entities:
 
-    for entity in entities:
+        return []
 
-        if not entity:
-            continue
-
-        info = normalise_entity(
-            entity
-        )
-
-        # Unknown entity:
-        # Do not invent a domain.
-        if info is None:
-            continue
-
-        normalised.append(
-            {
-                "mention": entity,
-                "canonical_name": info.canonical_name,
-                "entity_type": info.entity_type,
-            }
-        )
-
-    # --------------------------------------------------------
-    # REMOVE DUPLICATES
-    # --------------------------------------------------------
+    results = []
 
     seen = set()
 
-    unique_entities = []
+    for entity in entities:
 
-    for entity in normalised:
+        info = normalise_entity(entity)
+
+        if info is None:
+
+            continue
 
         key = (
-            entity["canonical_name"],
-            entity["entity_type"],
+
+            info.canonical_name,
+
+            info.entity_type,
+
         )
 
-        if key not in seen:
+        if key in seen:
 
-            seen.add(key)
+            continue
 
-            unique_entities.append(
-                entity
-            )
+        seen.add(key)
 
-    return unique_entities
+        results.append(
+
+            {
+
+                "mention": entity,
+
+                "canonical_name": info.canonical_name,
+
+                "entity_type": info.entity_type,
+
+            }
+
+        )
+
+    return results
+
+
+# ============================================================
+# REGISTER ENTITY
+# ============================================================
+
+def register_entity(
+    alias: str,
+    canonical_name: str,
+    entity_type: str,
+) -> None:
+    """
+    Register an entity at runtime.
+
+    Useful when loading entities from the
+    knowledge base during startup.
+    """
+
+    key = _normalize_text(alias)
+
+    ENTITY_REGISTRY[key] = EntityInfo(
+
+        canonical_name=canonical_name,
+
+        entity_type=entity_type,
+
+    )
+
+
+# ============================================================
+# ALL REGISTERED ENTITIES
+# ============================================================
+
+def get_registered_entities() -> Dict[str, EntityInfo]:
+    """
+    Return the entity registry.
+    """
+
+    return ENTITY_REGISTRY.copy()

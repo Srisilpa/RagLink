@@ -1,36 +1,125 @@
-from langgraph.graph import StateGraph
+from langgraph.graph import (
+    StateGraph,
+    END,
+)
 
 from rag.langgraph.state import GraphState
 
+
 from rag.langgraph.nodes import (
+
     check_cache,
+
+    query_router_node,
+
     understand_query,
+
     normalise_entities_node,
+
     retrieval_planning_node,
+
     retrieve_documents,
+
     rerank_documents,
+
     build_context,
+
+    evidence_check_node,
+
+    safe_response,
+
     generate_answer,
+
+    add_citations,
+
     save_cache,
+
+    tool_handler,
+
+    chat_handler,
+
 )
 
 
-# ==========================================
+
+# ============================================================
+# ROUTERS
+# ============================================================
+
+
+def cache_router(state):
+
+    if state.get(
+        "cache_hit",
+        False
+    ):
+
+        return "cached"
+
+
+    return "continue"
+
+
+
+
+def route_query(state):
+
+    query_type = state.get(
+        "query_type",
+        "rag"
+    )
+
+
+    if query_type == "rag":
+
+        return "rag"
+
+
+    elif query_type == "chat":
+
+        return "chat"
+
+
+    else:
+
+        return "tool"
+
+
+
+
+def evidence_router(state):
+
+    if state.get(
+        "evidence_sufficient",
+        False
+    ):
+
+        return "generate"
+
+
+    return "safe"
+
+
+
+
+
+# ============================================================
 # CREATE GRAPH
-# ==========================================
+# ============================================================
+
 
 builder = StateGraph(
     GraphState
 )
 
 
-# ==========================================
-# ADD NODES
-# ==========================================
 
-# ------------------------------------------
-# CACHE
-# ------------------------------------------
+
+
+# ============================================================
+# ADD NODES
+# ============================================================
+
 
 builder.add_node(
     "cache",
@@ -38,9 +127,11 @@ builder.add_node(
 )
 
 
-# ------------------------------------------
-# QUERY UNDERSTANDING
-# ------------------------------------------
+builder.add_node(
+    "query_router",
+    query_router_node
+)
+
 
 builder.add_node(
     "understand",
@@ -48,19 +139,11 @@ builder.add_node(
 )
 
 
-# ------------------------------------------
-# ENTITY NORMALISATION
-# ------------------------------------------
-
 builder.add_node(
     "normalise_entities",
     normalise_entities_node
 )
 
-
-# ------------------------------------------
-# RETRIEVAL PLANNING
-# ------------------------------------------
 
 builder.add_node(
     "retrieval_planning",
@@ -68,19 +151,11 @@ builder.add_node(
 )
 
 
-# ------------------------------------------
-# RETRIEVAL
-# ------------------------------------------
-
 builder.add_node(
     "retrieve",
     retrieve_documents
 )
 
-
-# ------------------------------------------
-# RERANKING
-# ------------------------------------------
 
 builder.add_node(
     "rerank",
@@ -88,19 +163,23 @@ builder.add_node(
 )
 
 
-# ------------------------------------------
-# CONTEXT REFINEMENT
-# ------------------------------------------
-
 builder.add_node(
     "context",
     build_context
 )
 
 
-# ------------------------------------------
-# ANSWER GENERATION
-# ------------------------------------------
+builder.add_node(
+    "evidence_check",
+    evidence_check_node
+)
+
+
+builder.add_node(
+    "safe_response",
+    safe_response
+)
+
 
 builder.add_node(
     "generate",
@@ -108,9 +187,23 @@ builder.add_node(
 )
 
 
-# ------------------------------------------
-# CACHE SAVE
-# ------------------------------------------
+builder.add_node(
+    "citations",
+    add_citations
+)
+
+
+builder.add_node(
+    "tool_handler",
+    tool_handler
+)
+
+
+builder.add_node(
+    "chat_handler",
+    chat_handler
+)
+
 
 builder.add_node(
     "save",
@@ -118,32 +211,78 @@ builder.add_node(
 )
 
 
-# ==========================================
+
+
+
+# ============================================================
 # ENTRY POINT
-# ==========================================
+# ============================================================
+
 
 builder.set_entry_point(
     "cache"
 )
 
 
-# ==========================================
-# GRAPH FLOW
-# ==========================================
 
-# ------------------------------------------
-# CACHE
-# ------------------------------------------
 
-builder.add_edge(
+
+# ============================================================
+# CACHE ROUTING
+# ============================================================
+
+
+builder.add_conditional_edges(
+
     "cache",
-    "understand"
+
+    cache_router,
+
+    {
+
+        "cached": END,
+
+        "continue": "query_router",
+
+    }
+
 )
 
 
-# ------------------------------------------
-# QUERY UNDERSTANDING
-# ------------------------------------------
+
+
+
+# ============================================================
+# QUERY ROUTING
+# ============================================================
+
+
+builder.add_conditional_edges(
+
+    "query_router",
+
+    route_query,
+
+    {
+
+        "rag": "understand",
+
+        "tool": "tool_handler",
+
+        "chat": "chat_handler",
+
+    }
+
+)
+
+
+
+
+
+# ============================================================
+# RAG PIPELINE
+# ============================================================
+
 
 builder.add_edge(
     "understand",
@@ -151,19 +290,11 @@ builder.add_edge(
 )
 
 
-# ------------------------------------------
-# ENTITY NORMALISATION
-# ------------------------------------------
-
 builder.add_edge(
     "normalise_entities",
     "retrieval_planning"
 )
 
-
-# ------------------------------------------
-# RETRIEVAL PLANNING
-# ------------------------------------------
 
 builder.add_edge(
     "retrieval_planning",
@@ -171,19 +302,11 @@ builder.add_edge(
 )
 
 
-# ------------------------------------------
-# HYBRID RETRIEVAL
-# ------------------------------------------
-
 builder.add_edge(
     "retrieve",
     "rerank"
 )
 
-
-# ------------------------------------------
-# CROSS-ENCODER RERANKING
-# ------------------------------------------
 
 builder.add_edge(
     "rerank",
@@ -191,37 +314,113 @@ builder.add_edge(
 )
 
 
-# ------------------------------------------
-# CONTEXT REFINEMENT
-# ------------------------------------------
-
 builder.add_edge(
     "context",
-    "generate"
+    "evidence_check"
 )
 
 
-# ------------------------------------------
-# LLM GENERATION
-# ------------------------------------------
+
+
+
+# ============================================================
+# EVIDENCE ROUTING
+# ============================================================
+
+
+builder.add_conditional_edges(
+
+    "evidence_check",
+
+    evidence_router,
+
+    {
+
+        "generate": "generate",
+
+        "safe": "safe_response",
+
+    }
+
+)
+
+
+
+
+
+# ============================================================
+# FINAL RESPONSE
+# ============================================================
+
 
 builder.add_edge(
+
     "generate",
-    "save"
+
+    "citations"
+
 )
 
 
-# ==========================================
-# FINISH
-# ==========================================
+builder.add_edge(
 
-builder.set_finish_point(
+    "citations",
+
     "save"
+
 )
 
 
-# ==========================================
+builder.add_edge(
+
+    "safe_response",
+
+    "save"
+
+)
+
+
+builder.add_edge(
+
+    "tool_handler",
+
+    "save"
+
+)
+
+
+builder.add_edge(
+
+    "chat_handler",
+
+    "save"
+
+)
+
+
+
+
+
+# ============================================================
+# END
+# ============================================================
+
+
+builder.add_edge(
+
+    "save",
+
+    END
+
+)
+
+
+
+
+
+# ============================================================
 # COMPILE GRAPH
-# ==========================================
+# ============================================================
+
 
 graph = builder.compile()

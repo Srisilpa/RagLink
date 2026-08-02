@@ -4,30 +4,53 @@ from rag.tools.query_router import classify_query
 
 from rag.tools.calculator import calculate
 
-from rag.tools.date import (
-    get_date,
-    get_time
-)
+from rag.tools.date import get_date
+from rag.tools.time import get_time
 
 from rag.tools.web_search import web_search
 
 
+
 class ChatService:
+
 
     def __init__(self):
 
         self.pipeline = RAGPipeline()
 
 
+
     def ask(self, question):
+
+
+        print("==============================")
+        print("CHAT SERVICE INPUT:")
+        print(question)
+        print(type(question))
+        print("==============================")
+
+
+
+        # =====================================================
+        # EMPTY QUERY
+        # =====================================================
 
         if not question or not question.strip():
 
             return {
+
                 "answer": "Please enter a question.",
+
                 "sources": [],
+
                 "chunks": []
+
             }
+
+
+
+        question = question.strip()
+
 
 
         # =====================================================
@@ -38,13 +61,35 @@ class ChatService:
             question
         )
 
+
         print(
             f"Question: {question}"
         )
 
+
         print(
             f"Query Type: {query_type}"
         )
+
+
+
+        # =====================================================
+        # SIMPLE CHAT
+        # =====================================================
+
+        if query_type == "chat":
+
+            return {
+
+                "answer":
+                    "Hello! How can I help you with the company knowledge base?",
+
+                "sources": [],
+
+                "chunks": []
+
+            }
+
 
 
         # =====================================================
@@ -55,15 +100,17 @@ class ChatService:
 
             return {
 
-                "answer": calculate(
-                    question
-                ),
+                "answer":
+                    calculate(
+                        question
+                    ),
 
                 "sources": [],
 
                 "chunks": []
 
             }
+
 
 
         # =====================================================
@@ -74,13 +121,15 @@ class ChatService:
 
             return {
 
-                "answer": get_date(),
+                "answer":
+                    get_date(),
 
                 "sources": [],
 
                 "chunks": []
 
             }
+
 
 
         # =====================================================
@@ -91,7 +140,8 @@ class ChatService:
 
             return {
 
-                "answer": get_time(),
+                "answer":
+                    get_time(),
 
                 "sources": [],
 
@@ -100,15 +150,18 @@ class ChatService:
             }
 
 
+
         # =====================================================
         # WEB SEARCH
         # =====================================================
 
         if query_type == "web":
 
+
             results = web_search(
                 question
             )
+
 
 
             if not results:
@@ -116,7 +169,7 @@ class ChatService:
                 return {
 
                     "answer":
-                    "I couldn't find reliable information.",
+                        "I couldn't find reliable information.",
 
                     "sources": [],
 
@@ -125,16 +178,17 @@ class ChatService:
                 }
 
 
+
             context = "\n\n".join(
 
                 [
 
                     f"""
 Title:
-{item.get('title', '')}
+{item.get('title','')}
 
 Content:
-{item.get('snippet', '')}
+{item.get('snippet','')}
 """
 
                     for item in results
@@ -142,6 +196,7 @@ Content:
                 ]
 
             )
+
 
 
             prompt = f"""
@@ -155,25 +210,30 @@ Rules:
 1. Do not use your own knowledge.
 2. Do not guess.
 3. Do not add information that is not present.
-4. If the information is insufficient, say:
-"I couldn't find reliable information."
+4. If information is insufficient, say:
+I couldn't find reliable information.
+
 
 Information:
 
 {context}
 
+
 Question:
 
 {question}
+
 
 Answer:
 
 """
 
 
+
             answer = self.pipeline.generate(
                 prompt
             )
+
 
 
             return {
@@ -184,29 +244,30 @@ Answer:
 
                 "chunks":
 
-                [
+                    [
 
-                    {
+                        {
 
-                        "title":
-                        item.get(
-                            "title",
-                            ""
-                        ),
+                            "title":
+                                item.get(
+                                    "title",
+                                    ""
+                                ),
 
-                        "content":
-                        item.get(
-                            "snippet",
-                            ""
-                        )
+                            "content":
+                                item.get(
+                                    "snippet",
+                                    ""
+                                )
 
-                    }
+                        }
 
-                    for item in results
+                        for item in results
 
-                ]
+                    ]
 
             }
+
 
 
         # =====================================================
@@ -216,9 +277,12 @@ Answer:
         # HR documents
         # Projects
         # Technical documents
-        # Knowledge base
+        # Knowledge Base
         # =====================================================
+
 
         return self.pipeline.ask(
             question
         )
+
+    

@@ -7,29 +7,45 @@ from rag.generation.llm import GroqLLM
 
 class ContextCompressor:
     """
-    Compresses retrieved documents by extracting only
-    the passages relevant to the user's question.
+    Compress retrieved documents while preserving metadata.
 
-    Input:
-        List of Documents
+    Pipeline
 
-    Output:
-        Compressed context string
+        Retrieved Documents
+                ↓
+        LLM Compression
+                ↓
+        Compressed Documents (metadata preserved)
+
+    Returns:
+
+        List[Document]
     """
 
     def __init__(self):
 
         self.llm = GroqLLM()
 
+    # ============================================================
+    # MAIN
+    # ============================================================
+
     def compress(
         self,
         query: str,
-        documents: List[Document]
-    ) -> str:
+        documents: List[Document],
+    ) -> List[Document]:
+        """
+        Compress each retrieved document individually.
 
-        # ==========================================
-        # VALIDATE QUERY
-        # ==========================================
+        Metadata is preserved so later stages
+        (Context Refiner, Citation Generator)
+        still know the original source.
+        """
+
+        # --------------------------------------------------------
+        # Validate query
+        # --------------------------------------------------------
 
         if not query or not query.strip():
 
@@ -37,30 +53,26 @@ class ContextCompressor:
                 "Query cannot be empty."
             )
 
-        # ==========================================
-        # VALIDATE DOCUMENTS
-        # ==========================================
+        # --------------------------------------------------------
+        # Validate documents
+        # --------------------------------------------------------
 
         if not documents:
 
-            return ""
+            return []
 
-        # ==========================================
-        # BUILD DOCUMENT CONTEXT
-        # ==========================================
+        compressed_documents = []
 
-        document_parts = []
+        # --------------------------------------------------------
+        # Compress every document independently
+        # --------------------------------------------------------
 
-        for index, document in enumerate(
-            documents,
-            start=1
-        ):
+        for document in documents:
 
             if not isinstance(
                 document,
-                Document
+                Document,
             ):
-
                 continue
 
             content = (
@@ -69,102 +81,91 @@ class ContextCompressor:
             ).strip()
 
             if not content:
-
                 continue
 
-            document_parts.append(
-
-                f"""
-DOCUMENT {index}
-
-SOURCE:
-{document.metadata.get("file_name", "Unknown")}
-
-CONTENT:
-{content}
-"""
-
-            )
-
-        # ==========================================
-        # NO VALID DOCUMENTS
-        # ==========================================
-
-        if not document_parts:
-
-            return ""
-
-        documents_text = "\n".join(
-            document_parts
-        )
-
-        # ==========================================
-        # COMPRESSION PROMPT
-        # ==========================================
-
-        prompt = f"""
-You are a context compression component
-inside an enterprise Retrieval-Augmented
-Generation system.
+            prompt = f"""
+You are an enterprise RAG Context Compressor.
 
 Your task is to extract ONLY the information
-from the retrieved documents that is directly
-relevant to answering the user's question.
+needed to answer the user's question.
 
-USER QUESTION:
+QUESTION:
 {query}
 
-RETRIEVED DOCUMENTS:
-{documents_text}
+DOCUMENT:
+{content}
 
-RULES:
+RULES
 
-1. Use ONLY information present in the
-   retrieved documents.
+1. Use ONLY information from the document.
 
 2. Do NOT invent facts.
 
-3. Do NOT add outside knowledge.
+3. Preserve names, numbers,
+dates, technologies,
+and technical terminology.
 
-4. Preserve exact names, numbers, dates,
-   versions, technologies, and technical terms.
+4. Remove unrelated content.
 
-5. Remove irrelevant information.
-
-6. Keep important supporting details needed
-   to answer the question accurately.
-
-7. If multiple documents contain relevant
-   information, combine the relevant parts.
-
-8. If the documents do not contain information
-   relevant to the question, return:
+5. If nothing is relevant return
 
 NO_RELEVANT_CONTEXT
 
-9. Return ONLY the compressed context.
-
-COMPRESSED CONTEXT:
+Return ONLY the compressed text.
 """
 
-        compressed = self.llm.generate(
-            prompt
-        ).strip()
+            compressed = self.llm.generate(
+                prompt
+            ).strip()
 
-        # ==========================================
-        # HANDLE EMPTY RESPONSE
-        # ==========================================
+            # ------------------------------------
+            # Ignore empty responses
+            # ------------------------------------
 
-        if not compressed:
+            if not compressed:
+                continue
 
-            return ""
+            if (
+                compressed
+                == "NO_RELEVANT_CONTEXT"
+            ):
+                continue
 
-        # ==========================================
-        # HANDLE NO RELEVANT CONTEXT
-        # ==========================================
+            # ------------------------------------
+            # Preserve metadata
+            # ------------------------------------
 
-        if compressed == "NO_RELEVANT_CONTEXT":
+            compressed_document = Document(
 
-            return ""
+                page_content=compressed,
 
-        return compressed
+                metadata=document.metadata.copy(),
+
+            )
+
+            compressed_documents.append(
+                compressed_document
+            )
+                    # --------------------------------------------------------
+        # Compression Summary
+        # --------------------------------------------------------
+
+        print("\n" + "=" * 60)
+        print("CONTEXT COMPRESSION")
+        print("=" * 60)
+
+        print(
+            f"Input Documents      : {len(documents)}"
+        )
+
+        print(
+            f"Compressed Documents : {len(compressed_documents)}"
+        )
+
+        print("=" * 60)
+
+        # --------------------------------------------------------
+        # Return compressed documents
+        # --------------------------------------------------------
+
+        return compressed_documents

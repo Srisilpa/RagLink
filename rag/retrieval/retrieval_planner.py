@@ -1,42 +1,20 @@
 """
 Retrieval planning for RAGLink.
 
-This module builds a retrieval plan using BOTH:
+Builds an intelligent retrieval plan using:
 
-1. Entities extracted by QueryUnderstanding
-2. Known entity mentions directly detected in the query
+1. Normalized entities
+2. Query Understanding output
+3. Intent
+4. Expanded queries
+5. Metadata filters
 
-This is important because LLM-based entity extraction
-can miss entities.
+This planner determines:
 
-Example:
-
-    Query:
-        "What AWS and Azure services does Project Meridian use?"
-
-Even if QueryUnderstanding returns:
-
-    ["Project Meridian"]
-
-The planner can still detect:
-
-    AWS
-    Azure
-
-directly from the query.
-
-Therefore:
-
-    Project Meridian -> project
-    AWS              -> infrastructure
-    Azure            -> infrastructure
-
-Final retrieval plan:
-
-    document_types = [
-        "infrastructure",
-        "project"
-    ]
+• Search queries
+• Metadata filters
+• Retrieval depth
+• Retrieval strategy
 """
 
 from typing import Dict, List
@@ -47,7 +25,7 @@ from rag.query_understanding.entity_normalizer import (
 
 
 # ============================================================
-# DOMAIN MAPPING
+# DOMAIN → DOCUMENT TYPE
 # ============================================================
 
 DOMAIN_TO_DOCUMENT_TYPE = {
@@ -67,102 +45,52 @@ DOMAIN_TO_DOCUMENT_TYPE = {
 
 KNOWN_ENTITY_MENTIONS = {
 
-    # --------------------------------------------------------
-    # PROJECTS
-    # --------------------------------------------------------
-
+    # Projects
     "project meridian",
+    "meridian project",
 
-    "meridian",
-
-    # --------------------------------------------------------
-    # COMPANY
-    # --------------------------------------------------------
-
+    # Company
     "series tech limited",
-
     "series tech",
 
-    # --------------------------------------------------------
-    # INFRASTRUCTURE
-    # --------------------------------------------------------
-
-    "aws",
-
+    # Infrastructure
     "amazon web services",
-
-    "azure",
-
+    "aws",
     "microsoft azure",
+    "azure",
 
 }
 
 
 # ============================================================
-# EXTRACT ENTITY MENTIONS FROM QUERY
+# DETECT ENTITIES DIRECTLY FROM QUERY
 # ============================================================
 
 def detect_known_entities_from_query(
     query: str,
 ) -> List[str]:
-    """
-    Detect known entity mentions directly from the query.
-
-    This is deterministic and does not depend on the LLM.
-
-    Example:
-
-        Query:
-            "What AWS and Azure services does Project Meridian use?"
-
-        Returns:
-
-            [
-                "Project Meridian",
-                "AWS",
-                "Azure"
-            ]
-    """
 
     if not query:
-
         return []
 
-    query_lower = query.lower()
+    query = query.lower()
 
     detected = []
 
-    # ========================================================
-    # LONGEST MATCH FIRST
-    #
-    # This prevents:
-    #
-    # "amazon web services"
-    #
-    # from being treated differently from:
-    #
-    # "aws"
-    # ========================================================
-
-    sorted_mentions = sorted(
-
+    for mention in sorted(
         KNOWN_ENTITY_MENTIONS,
-
         key=len,
-
         reverse=True,
+    ):
 
-    )
-
-    for mention in sorted_mentions:
-
-        if mention in query_lower:
+        if mention in query:
 
             detected.append(
                 mention
             )
 
     return detected
+
 
 
 # ============================================================
@@ -172,178 +100,158 @@ def detect_known_entities_from_query(
 def merge_entity_mentions(
     query: str,
     entities: List[Dict],
-) -> List[str]:
-    """
-    Merge:
-
-        1. LLM-extracted entities
-        2. Deterministically detected known entities
-
-    Duplicate entities are removed.
-    """
+) -> List[Dict]:
 
     merged = []
 
-    # ========================================================
-    # ADD LLM ENTITIES
-    # ========================================================
 
-    for entity in entities:
+    # Existing Query Understanding entities
 
-        if not isinstance(
-            entity,
-            dict,
-        ):
+    if entities:
 
-            continue
+        for entity in entities:
 
-        canonical_name = entity.get(
-            "canonical_name"
-        )
+            if isinstance(
+                entity,
+                dict
+            ):
 
-        mention = entity.get(
-            "mention"
-        )
+                merged.append(
+                    entity
+                )
 
-        if canonical_name:
 
-            merged.append(
-                canonical_name
-            )
 
-        elif mention:
+    # Detect known entities
 
-            merged.append(
-                mention
-            )
-
-    # ========================================================
-    # ADD DIRECTLY DETECTED ENTITIES
-    # ========================================================
-
-    detected = detect_known_entities_from_query(
+    detected_entities = detect_known_entities_from_query(
         query
     )
 
-    merged.extend(
-        detected
-    )
 
-    # ========================================================
-    # NORMALISE + DEDUPLICATE
-    # ========================================================
-
-    canonical_entities = []
-
-    seen = set()
-
-    for entity in merged:
+    for mention in detected_entities:
 
         info = normalise_entity(
-            entity
+            mention
         )
+
 
         if info is None:
 
             continue
 
-        canonical_name = (
-            info.canonical_name
+
+        merged.append(
+
+            {
+                "mention":
+                    mention,
+
+                "canonical_name":
+                    info.canonical_name,
+
+                "entity_type":
+                    info.entity_type,
+            }
+
         )
 
-        key = canonical_name.lower()
+
+
+    # Remove duplicates
+
+    unique = []
+
+    seen = set()
+
+
+    for entity in merged:
+
+        key = (
+
+            entity.get(
+                "canonical_name"
+            ),
+
+            entity.get(
+                "entity_type"
+            )
+
+        )
+
 
         if key in seen:
 
             continue
 
-        seen.add(
-            key
+
+        seen.add(key)
+
+
+        unique.append(
+            entity
         )
 
-        canonical_entities.append(
-            canonical_name
-        )
 
-    return canonical_entities
+    return unique
+
 
 
 # ============================================================
-# BUILD RETRIEVAL PLAN
+# BUILD METADATA FILTERS
 # ============================================================
 
-def build_retrieval_plan(
-    query: str,
+def build_metadata_filters(
     entities: List[Dict],
 ) -> Dict:
     """
-    Build a multi-domain-aware retrieval plan.
+    Creates metadata filters compatible with Chroma.
 
-    Domain detection is based on:
+    Existing Chroma metadata:
 
-        - LLM extracted entities
-        - Direct known entity detection
+    {
+        document_type,
+        file_name,
+        source,
+        document_id
+    }
 
-    Examples:
-
-        Project Meridian
-
-        ->
-        document_types = ["project"]
-
-
-        Project Meridian + AWS + Azure
-
-        ->
-        document_types = [
-            "infrastructure",
-            "project"
-        ]
-
-
-        Unknown query
-
-        ->
-        document_types = []
-
-        No hard metadata filtering is applied.
     """
 
-    # ========================================================
-    # MERGE ENTITY INFORMATION
-    # ========================================================
 
-    canonical_entities = merge_entity_mentions(
+    filters = {}
 
-        query=query,
-
-        entities=entities,
-
-    )
-
-    # ========================================================
-    # DETECT DOMAINS
-    # ========================================================
 
     document_types = set()
 
-    for canonical_entity in canonical_entities:
+    file_names = []
 
-        info = normalise_entity(
-            canonical_entity
+    companies = []
+
+    technologies = []
+
+
+
+    for entity in entities:
+
+
+        entity_type = entity.get(
+            "entity_type",
+            ""
         )
 
-        if info is None:
 
-            continue
-
-        entity_type = info.entity_type
-
-        document_type = (
-            DOMAIN_TO_DOCUMENT_TYPE.get(
-                entity_type
-            )
+        canonical_name = entity.get(
+            "canonical_name",
+            ""
         )
+
+
+
+        document_type = DOMAIN_TO_DOCUMENT_TYPE.get(
+            entity_type
+        )
+
 
         if document_type:
 
@@ -351,28 +259,301 @@ def build_retrieval_plan(
                 document_type
             )
 
-    # ========================================================
-    # SORT FOR DETERMINISTIC OUTPUT
-    # ========================================================
 
-    document_types = sorted(
-        document_types
+
+                # ----------------------------------------
+        # PROJECT FILTER
+        # ----------------------------------------
+
+        if entity_type == "project":
+
+            project_name = canonical_name.replace(
+                " ",
+                "_"
+            )
+
+            file_names.append(
+                f"{project_name}_Comprehensive_Technical_Specification.pdf"
+            )
+
+        # ----------------------------------------
+        # COMPANY FILTER
+        # ----------------------------------------
+
+        elif entity_type == "company":
+
+            companies.append(
+                canonical_name
+            )
+
+
+
+        # ----------------------------------------
+        # INFRASTRUCTURE FILTER
+        # ----------------------------------------
+
+        elif entity_type == "infrastructure":
+
+            technologies.append(
+                canonical_name
+            )
+
+
+
+    if document_types:
+
+        filters["document_type"] = list(
+            document_types
+        )
+
+
+
+    if file_names:
+
+        filters["file_name"] = list(
+            set(file_names)
+        )
+
+
+
+    if companies:
+
+        filters["company"] = list(
+            set(companies)
+        )
+
+
+
+    if technologies:
+
+        filters["technology"] = list(
+            set(technologies)
+        )
+
+
+    return filters
+
+
+
+# ============================================================
+# BUILD SEARCH QUERIES
+# ============================================================
+
+def _build_search_queries(
+    query: str,
+    rewritten_query: str,
+    expanded_queries: List[str],
+    canonical_entities: List[str],
+) -> List[str]:
+
+
+    queries = []
+
+
+    for q in (
+        query,
+        rewritten_query,
+    ):
+
+
+        if q and q not in queries:
+
+            queries.append(
+                q
+            )
+
+
+
+    for q in expanded_queries or []:
+
+
+        q = q.strip()
+
+
+        if q and q not in queries:
+
+            queries.append(
+                q
+            )
+
+
+
+    for entity in canonical_entities:
+
+
+        if entity not in queries:
+
+            queries.append(
+                entity
+            )
+
+
+    return queries
+
+
+
+# ============================================================
+# RETRIEVAL DEPTH
+# ============================================================
+
+def _determine_top_k(
+    intent: str,
+    entity_count: int,
+) -> int:
+
+
+    top_k = 15
+
+
+    if intent in (
+
+        "summary",
+
+        "comparison",
+
+        "architecture",
+
+        "tech_stack",
+
+    ):
+
+        top_k = 25
+
+
+
+    elif intent in (
+
+        "procedure",
+
+        "policy",
+
+    ):
+
+        top_k = 20
+
+
+
+    if entity_count >= 3:
+
+        top_k += 5
+
+
+
+    return min(
+        top_k,
+        30
     )
 
-    # ========================================================
-    # BUILD FINAL PLAN
-    # ========================================================
+
+
+# ============================================================
+# PUBLIC RETRIEVAL PLANNER
+# ============================================================
+
+def build_retrieval_plan(
+    query: str,
+    rewritten_query: str,
+    entities: List[Dict],
+    expanded_queries: List[str],
+    intent: str,
+):
+
+
+    merged_entities = merge_entity_mentions(
+        query,
+        entities
+    )
+
+
+
+    canonical_entities = []
+
+
+
+    for entity in merged_entities:
+
+
+        name = (
+
+            entity.get(
+                "canonical_name"
+            )
+
+            or
+
+            entity.get(
+                "mention"
+            )
+
+        )
+
+
+        if name:
+
+            canonical_entities.append(
+                name
+            )
+
+
+
+    search_queries = _build_search_queries(
+
+        query=query,
+
+        rewritten_query=rewritten_query,
+
+        expanded_queries=expanded_queries,
+
+        canonical_entities=canonical_entities,
+
+    )
+
+
+
+    metadata_filters = build_metadata_filters(
+        merged_entities
+    )
+
+
+
+    document_types = metadata_filters.get(
+        "document_type",
+        []
+    )
+
+
+
+    top_k = _determine_top_k(
+
+        intent,
+
+        len(canonical_entities)
+
+    )
+
+
 
     return {
 
-        "query": query,
 
-        "entities": canonical_entities,
+        "search_queries":
+            search_queries,
 
-        "document_types": document_types,
 
-        "use_metadata_filter": bool(
-            document_types
-        ),
+        "document_types":
+            document_types,
+
+
+        "metadata_filters":
+            metadata_filters,
+
+
+        "entities":
+            canonical_entities,
+
+
+        "top_k":
+            top_k,
+
 
     }

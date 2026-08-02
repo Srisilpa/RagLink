@@ -2,14 +2,7 @@ from datetime import datetime
 
 
 def get_date():
-
-    return datetime.now().strftime(
-        "%d %B %Y"
-    )
-
-
-def get_time():
-
-    return datetime.now().strftime(
-        "%I:%M %p"
-    )
+    """
+    Returns today's date.
+    """
+    return datetime.now().strftime("%Y-%m-%d")

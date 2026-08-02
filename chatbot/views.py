@@ -4,41 +4,87 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 
 import json
+import traceback
 
 from .services import ChatService
+
 
 chat_service = ChatService()
 
 
+
 @login_required
 def chatbot_page(request):
-    return render(request, "chatbot/chat.html")
+
+    return render(
+        request,
+        "chatbot/chat.html"
+    )
+
 
 
 @csrf_exempt
 def chat(request):
 
     if request.method != "POST":
+
         return JsonResponse(
-            {"error": "POST request required"},
+            {
+                "error": "POST request required"
+            },
             status=405
         )
 
+
     try:
-        data = json.loads(request.body)
 
-        question = data.get("message", "")
+        data = json.loads(
+            request.body
+        )
 
-        result = chat_service.ask(question)
+
+        question = data.get(
+            "message",
+            ""
+        )
+
+
+        print("==============================")
+        print("CHAT SERVICE INPUT:")
+        print(question)
+        print(type(question))
+        print("==============================")
+
+
+
+        result = chat_service.ask(
+            question
+        )
+
 
         print("\n========== RESULT ==========")
         print(result)
         print("============================\n")
 
-        return JsonResponse(result)
+
+        return JsonResponse(
+            result
+        )
+
+
 
     except Exception as e:
+
+        print("\n========== ERROR ==========")
+
+        traceback.print_exc()
+
+        print("===========================\n")
+
+
         return JsonResponse(
-            {"error": str(e)},
+            {
+                "error": str(e)
+            },
             status=500
         )

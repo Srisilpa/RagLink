@@ -142,35 +142,30 @@ def add_source_metadata(
 
         metadata.update({
 
-            "document_id":
+    "document_id": str(document_id),
 
-                str(
+    "source": relative_path,
 
-                    document_id
+    "file_name": os.path.basename(file_path),
 
-                ),
+    "document_type": document_type,
 
-            "source":
+    "chunk_id": f"{document_id}_{index}",
 
-                relative_path,
+})
 
-            "file_name":
 
-                os.path.basename(
+# Add project metadata
+        if document_type == "project":
 
-                    file_path
+            project_name = (
+        os.path.splitext(
+            os.path.basename(file_path)
+        )[0]
+        .replace("_", " ")
+    )
 
-                ),
-
-            "document_type":
-
-                document_type,
-
-            "chunk_id":
-
-                f"{document_id}_{index}",
-
-        })
+        metadata["project_name"] = project_name
 
         chunk.metadata = metadata
 

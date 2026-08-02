@@ -21,54 +21,48 @@ class GraphState(
 
     question: str
 
+
     # ========================================================
-    # REWRITTEN QUERY
+    # QUERY ROUTING TYPE
+    #
+    # rag
+    # chat
+    # time
+    # date
+    # calculator
+    # web
+    # ========================================================
+
+    query_type: str
+
+
+
+    # ========================================================
+    # QUERY UNDERSTANDING
     # ========================================================
 
     rewritten_query: str
 
-    # ========================================================
-    # QUERY INTENT
-    # ========================================================
+
+    expanded_queries: List[str]
+
 
     intent: str
 
+
+
     # ========================================================
-    # EXTRACTED AND NORMALISED ENTITIES
-    #
-    # Example:
-    #
-    # [
-    #     {
-    #         "mention": "Meridian",
-    #         "canonical_name": "Project Meridian",
-    #         "entity_type": "project"
-    #     }
-    # ]
+    # ENTITY EXTRACTION
     # ========================================================
 
     entities: List[
         Dict[str, Any]
     ]
 
+
+
     # ========================================================
-    # RETRIEVAL PLAN
-    #
-    # Example:
-    #
-    # {
-    #     "query": "...",
-    #     "entities": [
-    #         "Project Meridian",
-    #         "AWS",
-    #         "Azure"
-    #     ],
-    #     "document_types": [
-    #         "infrastructure",
-    #         "project"
-    #     ],
-    #     "use_metadata_filter": True
-    # }
+    # RETRIEVAL PLANNING
     # ========================================================
 
     retrieval_plan: Dict[
@@ -76,11 +70,19 @@ class GraphState(
         Any,
     ]
 
+
+    search_queries: List[str]
+
+
+    document_types: List[str]
+
+
+    retrieval_strategy: str
+
+
+
     # ========================================================
     # METADATA FILTERS
-    #
-    # Kept for compatibility with the existing
-    # query understanding pipeline.
     # ========================================================
 
     metadata_filters: Dict[
@@ -88,72 +90,97 @@ class GraphState(
         Any,
     ]
 
+
+
     # ========================================================
-    # MULTI-INTENT QUERIES
+    # MULTI-QUERY / MULTI-INTENT
     # ========================================================
 
     sub_queries: List[
         Dict[str, Any]
     ]
 
+
+
     # ========================================================
-    # RETRIEVED DOCUMENTS
+    # RETRIEVAL OUTPUT
     # ========================================================
 
     retrieved_docs: List[
         Document
     ]
 
-    # ========================================================
-    # RERANKED DOCUMENTS
-    #
-    # Typically:
-    #
-    # [
-    #     (Document, relevance_score)
-    # ]
-    # ========================================================
 
-    reranked_docs: List
+
+    retrieval_count: int
+
+
 
     # ========================================================
-    # FINAL CONTEXT
+    # RERANKING OUTPUT
+    # ========================================================
+
+    reranked_docs: List[
+        Document
+    ]
+
+
+
+    # ========================================================
+    # CONTEXT COMPRESSION
     # ========================================================
 
     context: str
 
+
+    context_count: int
+
+
+
     # ========================================================
-    # EVIDENCE STATUS
+    # EVIDENCE CHECK
     # ========================================================
 
     evidence_sufficient: bool
 
+
+
     # ========================================================
-    # GENERATED ANSWER
+    # GENERATION OUTPUT
     # ========================================================
 
     answer: str
 
+
+
     # ========================================================
-    # CACHE INFORMATION
+    # SOURCES
+    # ========================================================
+
+    sources: List[
+        Dict[str, Any]
+    ]
+
+
+
+    # ========================================================
+    # CACHE
     # ========================================================
 
     cache_hit: bool
 
-    # ========================================================
-    # RETRIEVAL METADATA
-    # ========================================================
 
-    retrieval_count: int
 
     # ========================================================
-    # FINAL CONTEXT COUNT
-    # ========================================================
-
-    context_count: int
-
-    # ========================================================
-    # LATENCY INFORMATION
+    # PERFORMANCE
     # ========================================================
 
     latency: float
+
+
+
+    # ========================================================
+    # ERROR TRACKING
+    # ========================================================
+
+    error: str

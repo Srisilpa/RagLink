@@ -552,3 +552,27 @@ def rebuild_vectorstore(
         embedding_model
 
     )
+
+
+# =========================================================
+# GET VECTORSTORE (UTILITY FUNCTION)
+# =========================================================
+
+def get_vectorstore():
+    """
+    Load existing ChromaDB vectorstore.
+
+    Used by:
+    - metadata checking scripts
+    - testing utilities
+    """
+
+    from rag.embeddings.embedding_model import (
+        get_embedding_model
+    )
+
+    embedding_model = get_embedding_model()
+
+    return load_vectorstore(
+        embedding_model
+    )
