@@ -1,568 +1,1050 @@
-# RAGLink – Enterprise Knowledge Hub
+# 🚀 RAGLink – Enterprise AI Knowledge Hub
+
+<p align="center">
 
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
-![Django](https://img.shields.io/badge/Web-Django-green)
-![LLM](https://img.shields.io/badge/LLM-Groq%20Llama--3.1-orange)
-![RAG](https://img.shields.io/badge/RAG-Hybrid%20Retrieval-purple)
-![Vector DB](https://img.shields.io/badge/Vector%20DB-ChromaDB-red)
-![Sparse Search](https://img.shields.io/badge/Sparse-BM25-yellow)
-![Database](https://img.shields.io/badge/Database-MySQL-blue)
-![Embeddings](https://img.shields.io/badge/Embeddings-HuggingFace-green)
-![Framework](https://img.shields.io/badge/Framework-LangChain-blueviolet)
-![Workflow](https://img.shields.io/badge/Workflow-LangGraph-orange)
-![Testing](https://img.shields.io/badge/Testing-Unittest-success)
-![License](https://img.shields.io/badge/License-MIT-lightgrey)
+![Django](https://img.shields.io/badge/Django-5.x-green)
+![Groq](https://img.shields.io/badge/LLM-Groq_Llama_3.1-orange)
+![LangChain](https://img.shields.io/badge/LangChain-Framework-blueviolet)
+![LangGraph](https://img.shields.io/badge/LangGraph-Agent_Workflow-red)
+![ChromaDB](https://img.shields.io/badge/Vector_DB-ChromaDB-success)
+![BM25](https://img.shields.io/badge/Retrieval-BM25-yellow)
+![RRF](https://img.shields.io/badge/Ranking-RRF-purple)
+![CrossEncoder](https://img.shields.io/badge/Reranker-Cross_Encoder-lightgrey)
+![License](https://img.shields.io/badge/License-MIT-blue)
+
+</p>
 
 ---
 
-## 📌 Project Name
+## 📖 About RAGLink
 
-# RAGLink
+**RAGLink** is an **Enterprise Retrieval-Augmented Generation (RAG)** platform that enables employees to interact with organizational knowledge using natural language.
 
-### Enterprise AI Knowledge Assistant using Retrieval-Augmented Generation
+Instead of manually searching through company policies, HR documents, technical manuals, infrastructure guides, and project documentation, users can simply ask questions through an AI-powered chat interface.
 
----
+The system intelligently understands user queries, retrieves the most relevant information using **Hybrid Retrieval**, validates the retrieved evidence, and generates context-aware responses using **Groq Llama 3.1**.
 
-## 💡 Project Idea
-
-RAGLink is an enterprise knowledge assistant that allows employees to ask questions about company policies, HR documents, projects, technical documentation, and internal knowledge.
-
-The system uses **Retrieval-Augmented Generation (RAG)** to retrieve relevant information from the company's knowledge base and generate context-aware answers.
-
-Instead of relying only on an LLM's pre-trained knowledge, RAGLink retrieves relevant company documents and provides them as context to the LLM before generating the response.
-
-This helps reduce hallucinations and ensures that answers are grounded in the organization's internal knowledge base.
+Built with a modular architecture using **Django**, **LangChain**, **LangGraph**, **ChromaDB**, and **BM25**, RAGLink demonstrates how modern AI systems can be integrated into enterprise knowledge management.
 
 ---
 
-## 🎯 Why RAGLink?
+# ✨ Features
 
-In an organization, employees often need to search through multiple documents to find information such as:
+### 🔐 Authentication
 
-- Leave policies
-- HR procedures
-- Employee onboarding
-- IT support processes
-- Project documentation
-- Technical architecture
-- Company policies
-- Learning and development information
-
-RAGLink provides a centralized AI-powered interface where employees can ask questions in natural language.
-
-### Example
-
-**User Question:**
-
-> What database does Project Meridian use?
-
-**RAGLink Answer:**
-
-> Project Meridian uses a MySQL 8.0 database schema.
+- Role-Based Authentication
+- Admin Dashboard
+- Team Lead Dashboard
+- Employee Dashboard
+- Secure Session Management
 
 ---
 
-# 🚀 Key Features
+### 📄 Enterprise Knowledge Management
 
-- 🔐 Role-based user authentication
-- 👨‍💼 Admin dashboard
-- 👨‍💻 Employee dashboard
-- 👥 Team Lead access
-- 📄 Enterprise document management
-- 📚 Document ingestion and processing
-- 🧠 HuggingFace embeddings
-- 🔎 Semantic search using ChromaDB
-- 🔤 Keyword search using BM25
-- 🔀 Hybrid retrieval using Reciprocal Rank Fusion
-- 🎯 Cross-Encoder reranking
-- ✍️ Query rewriting
-- 🤖 Groq Llama 3.1 LLM
-- 🛡️ Context-grounded answer generation
-- 🧮 Calculator tool
-- 📅 Date and time tools
-- 🌐 Web search tool
-- 🧭 Query routing
-- 🔄 LangGraph workflow foundation
-- 🧪 Unit testing for major RAG components
-- 💬 ChatGPT-style employee knowledge assistant
+- Upload Enterprise Documents
+- Manage Knowledge Base
+- Automatic Document Processing
+- Dynamic Document Indexing
+- Enterprise Search
 
 ---
 
-# 🛠️ Tech Stack
+### 🧠 Query Understanding
+
+- Query Rewriting
+- Query Expansion
+- Intent Classification
+- Entity Extraction
+- Entity Normalization
+- Metadata Detection
+
+---
+
+### 🔍 Intelligent Retrieval
+
+- Semantic Retrieval (ChromaDB)
+- Sparse Retrieval (BM25)
+- Hybrid Retrieval
+- Reciprocal Rank Fusion (RRF)
+- Cross-Encoder Reranking
+
+---
+
+### 🤖 Response Generation
+
+- Context Refinement
+- Context Compression
+- Evidence Validation
+- Prompt Construction
+- Grounded Answer Generation
+
+---
+
+### ⚙️ Utility Tools
+
+- Calculator
+- Date Tool
+- Time Tool
+- Web Search
+- Query Router
+
+---
+
+### 🚀 Performance
+
+- Memory Cache
+- Redis Cache
+- LangGraph Workflow
+- Modular Architecture
+- Unit Testing
+
+---
+
+# 🎯 Problem Statement
+
+Organizations store thousands of internal documents including
+
+- Company Policies
+- HR Guidelines
+- Technical Documentation
+- Infrastructure Manuals
+- Employee Handbooks
+- Project Documents
+- Security Policies
+- Standard Operating Procedures
+
+Finding relevant information across these documents is often slow and inefficient.
+
+Traditional keyword search returns many irrelevant results, forcing employees to manually inspect multiple documents.
+
+**RAGLink solves this problem by combining Retrieval-Augmented Generation with Hybrid Retrieval to provide fast, reliable, and context-aware answers grounded in enterprise knowledge.**
+
+---
+
+# 🛠 Technology Stack
 
 | Category | Technology |
-|---|---|
-| Programming Language | Python 3.13 |
-| Web Framework | Django |
-| Frontend | HTML, CSS, JavaScript |
-| Database | MySQL |
-| LLM | Groq Llama 3.1 |
-| RAG | Retrieval-Augmented Generation |
-| Embeddings | HuggingFace |
-| Vector Database | ChromaDB |
-| Sparse Retrieval | BM25 |
-| Hybrid Retrieval | Reciprocal Rank Fusion (RRF) |
-| Reranking | Cross-Encoder |
-| AI Framework | LangChain |
-| Workflow | LangGraph |
-| Testing | Python unittest |
-| Version Control | Git & GitHub |
+|-----------|------------|
+| **Programming Language** | Python 3.13 |
+| **Backend Framework** | Django |
+| **Frontend** | HTML5, CSS3, JavaScript |
+| **Database** | MySQL |
+| **Large Language Model** | Groq Llama 3.1 (Llama-3.1-8B-Instant) |
+| **AI Framework** | LangChain |
+| **Workflow Engine** | LangGraph |
+| **Embedding Model** | HuggingFace Sentence Transformers (`all-MiniLM-L6-v2`) |
+| **Vector Database** | ChromaDB |
+| **Sparse Retrieval** | BM25 |
+| **Hybrid Retrieval** | Reciprocal Rank Fusion (RRF) |
+| **Reranking** | Cross-Encoder (`ms-marco-MiniLM-L-6-v2`) |
+| **Caching** | Memory Cache, Redis Cache |
+| **Document Processing** | PDF, DOCX, TXT Processing |
+| **Testing** | Python `unittest` |
+| **Version Control** | Git & GitHub |
 
 ---
 
-# 🏗️ System Architecture
+# 🏛 Enterprise System Architecture
 
 ```mermaid
-flowchart TD
+flowchart TB
 
-    A[Employee] --> B[Django Web Application]
+subgraph Client
+A["👤 Employee"]
+end
 
-    B --> C[Authentication & Role Management]
+subgraph Presentation
+B["💻 Django Web Application"]
+C["🔐 Authentication"]
+D["📊 Role-Based Dashboard"]
+E["💬 Chat Interface"]
+end
 
-    C --> D[Employee / Team Lead / Admin Dashboard]
+subgraph Processing
+F["🧭 Query Router"]
+G["🧠 Enterprise RAG Pipeline"]
+end
 
-    D --> E[Chat Interface]
+subgraph Knowledge
+H["📄 Enterprise Documents"]
+I["🗄️ ChromaDB"]
+J["📑 BM25 Index"]
+K["🗃️ MySQL"]
+end
 
-    E --> F[Query Router]
+subgraph AI
+L["🤖 Groq Llama 3.1"]
+end
 
-    F --> G{Query Type}
-
-    G -->|Company Knowledge| H[RAG Pipeline]
-    G -->|Calculation| I[Calculator Tool]
-    G -->|Date / Time| J[Date Tool]
-    G -->|Web Query| K[Web Search Tool]
-
-    H --> L[Query Rewriter]
-
-    L --> M[Hybrid Retriever]
-
-    M --> N[Semantic Retrieval]
-    M --> O[BM25 Retrieval]
-
-    N --> P[ChromaDB]
-    O --> Q[BM25 Index]
-
-    N --> R[Reciprocal Rank Fusion]
-    O --> R
-
-    R --> S[Cross Encoder Reranker]
-
-    S --> T[Context Selection]
-
-    T --> U[Prompt Builder]
-
-    U --> V[Groq Llama 3.1]
-
-    V --> W[Grounded Answer]
-
-    W --> E
-````
+A --> B
+B --> C
+C --> D
+D --> E
+E --> F
+F --> G
+H --> G
+G --> I
+G --> J
+C --> K
+G --> L
+L --> E
+```
 
 ---
 
-# 📄 Document Ingestion Flow
-
-Documents uploaded to the knowledge base are processed before they can be used by the RAG system.
+# 🔄 High-Level Workflow
 
 ```mermaid
 flowchart LR
 
-    A[Company Documents] --> B[Document Loader]
+A["👤 Employee"]
+B["🔐 Login"]
+C["📊 Dashboard"]
+D["💬 Chat Interface"]
+E["🧭 Query Router"]
+F["🧠 Enterprise RAG Pipeline"]
+G["🤖 Groq Llama 3.1"]
+H["✅ Grounded Response"]
 
-    B --> C[Document Processor]
-
-    C --> D[Text Extraction]
-
-    D --> E[Chunking]
-
-    E --> F[Text Chunks]
-
-    F --> G[HuggingFace Embeddings]
-
-    G --> H[Vector Embeddings]
-
-    H --> I[ChromaDB]
-
-    F --> J[BM25 Index]
-
-    I --> K[Semantic Retrieval]
-    J --> L[Keyword Retrieval]
-```
-
-### Supported Knowledge Sources
-
-* PDF
-* DOCX
-* TXT
-* Company policies
-* HR documents
-* Project documentation
-* Technical documentation
-
----
-
-# 🔍 RAG Query Flow
-
-When an employee asks a question, RAGLink follows the following process:
-
-```mermaid
-sequenceDiagram
-
-    actor Employee
-
-    participant UI as Django Chat UI
-    participant Router as Query Router
-    participant RAG as RAG Pipeline
-    participant Rewrite as Query Rewriter
-    participant Hybrid as Hybrid Retriever
-    participant Vector as ChromaDB
-    participant BM25 as BM25
-    participant Rank as Cross Encoder
-    participant Prompt as Prompt Builder
-    participant LLM as Groq Llama 3.1
-
-    Employee->>UI: Ask Question
-
-    UI->>Router: Send Query
-
-    Router->>RAG: Company Knowledge Query
-
-    RAG->>Rewrite: Rewrite Query
-
-    Rewrite-->>RAG: Optimized Query
-
-    RAG->>Hybrid: Retrieve Documents
-
-    Hybrid->>Vector: Semantic Search
-    Vector-->>Hybrid: Semantic Results
-
-    Hybrid->>BM25: Keyword Search
-    BM25-->>Hybrid: BM25 Results
-
-    Hybrid-->>RAG: RRF Fused Results
-
-    RAG->>Rank: Rerank Documents
-
-    Rank-->>RAG: Ranked Documents
-
-    RAG->>Prompt: Build Context + Question
-
-    Prompt-->>RAG: Final Prompt
-
-    RAG->>LLM: Generate Answer
-
-    LLM-->>RAG: Grounded Response
-
-    RAG-->>UI: Return Answer
-
-    UI-->>Employee: Display Answer
+A --> B
+B --> C
+C --> D
+D --> E
+E --> F
+F --> G
+G --> H
 ```
 
 ---
 
-# 🔄 RAG Pipeline
+# 📌 Core Components
 
-```mermaid
-flowchart TD
-
-    A[User Question]
-
-    A --> B[Query Rewriting]
-
-    B --> C[Semantic Retrieval]
-
-    B --> D[BM25 Retrieval]
-
-    C --> E[Hybrid Fusion]
-
-    D --> E
-
-    E --> F[Reciprocal Rank Fusion]
-
-    F --> G[Cross Encoder Reranking]
-
-    G --> H[Context Selection]
-
-    H --> I[Prompt Construction]
-
-    I --> J[Groq Llama 3.1]
-
-    J --> K[Final Answer]
-```
-
-### RAG Pipeline Stages
-
-1. **Query Rewriting**
-   Converts the user's question into a retrieval-friendly query.
-
-2. **Semantic Retrieval**
-   Searches documents using vector similarity through ChromaDB.
-
-3. **BM25 Retrieval**
-   Performs keyword-based retrieval for exact terms and phrases.
-
-4. **Hybrid Retrieval**
-   Combines semantic and keyword search results using Reciprocal Rank Fusion.
-
-5. **Reranking**
-   Uses a Cross-Encoder model to identify the most relevant documents.
-
-6. **Context Selection**
-   Selects the most useful document chunks.
-
-7. **Prompt Construction**
-   Combines the user question with retrieved context.
-
-8. **LLM Generation**
-   Groq Llama 3.1 generates the final response using the retrieved context.
+| Component | Purpose |
+|-----------|---------|
+| **Authentication** | Manages user login, roles, and access control. |
+| **Chat Interface** | Provides an interactive interface for employees to ask questions. |
+| **Query Router** | Routes queries to the RAG pipeline or utility tools. |
+| **Enterprise RAG Pipeline** | Coordinates retrieval, ranking, and answer generation. |
+| **Hybrid Retriever** | Combines semantic and keyword-based retrieval. |
+| **Cross Encoder** | Reranks retrieved documents for improved relevance. |
+| **Context Processor** | Refines and compresses retrieved information. |
+| **Evidence Checker** | Validates supporting evidence before generation. |
+| **Prompt Builder** | Constructs optimized prompts for the language model. |
+| **Groq Llama 3.1** | Generates grounded responses using retrieved context. |
+| **ChromaDB** | Stores vector embeddings for semantic search. |
+| **BM25** | Performs sparse keyword-based retrieval. |
+| **MySQL** | Stores application data, users, and metadata. |
 
 ---
 
-# 📂 Project Structure
+# 📂 Project Organization
+
+The project follows a layered, modular architecture that separates user management, document processing, retrieval, and response generation into independent components. This design improves maintainability, scalability, and extensibility while keeping each module focused on a specific responsibility.
 
 ```text
-RAGLink/
-│
-├── accounts/                              # User authentication, roles, and account management
-│   ├── migrations/                        # Database migrations for user/account models
-│   ├── templates/                         # Account-related HTML templates
-│   ├── __init__.py                        # Python package initializer
-│   ├── admin.py                           # Registers account models in Django Admin
-│   ├── apps.py                            # Django application configuration
-│   ├── models.py                          # Custom User model and role definitions
-│   ├── services.py                        # Account-related business logic
-│   ├── tests.py                           # Account application tests
-│   ├── urls.py                            # URL routes for account features
-│   └── views.py                           # Login, logout, and account-related views
-│
-├── chatbot/                               # Chatbot application and RAG interaction layer
-│   ├── migrations/                        # Chatbot database migrations
-│   ├── templates/                         # Chatbot-specific HTML templates
-│   ├── __init__.py                        # Python package initializer
-│   ├── admin.py                           # Chatbot model administration
-│   ├── apps.py                            # Django chatbot app configuration
-│   ├── models.py                          # Chat and conversation data models
-│   ├── services.py                        # Connects user queries with RAG pipeline and tools
-│   ├── tests.py                            # Chatbot application tests
-│   ├── urls.py                            # Chatbot URL routes
-│   └── views.py                           # Handles chatbot requests and responses
-│
-├── chroma_db/                             # Persistent ChromaDB vector database
-│
-├── config/                                # Django project configuration
-│
-├── data/                                  # Processed data and generated intermediate files
-│
-├── documents/                             # Document management Django application
-│   ├── migrations/                        # Database migrations for document models
-│   ├── __init__.py                        # Python package initializer
-│   ├── admin.py                           # Registers document models in Django Admin
-│   ├── apps.py                            # Django document app configuration
-│   ├── forms.py                           # Forms for document upload and management
-│   ├── models.py                          # Document model and file metadata
-│   ├── tests.py                           # Document management tests
-│   ├── urls.py                            # URL routes for document management
-│   └── views.py                           # Document upload, listing, and management views
-│
-├── media/                                 # Uploaded company and project knowledge documents
-│   ├── Company/                           # Company-wide policies, HR, IT, security, and technical documents
-│   └── Projects/                          # Project-specific technical and project documentation
-│
-├── rag/                                   # Core Retrieval-Augmented Generation system
-│   │
-│   ├── cache/                             # Caching mechanisms for improving RAG performance
-│   │   ├── memory_cache.py                # In-memory caching
-│   │   └── redis_cache.py                 # Redis-based caching
-│   │
-│   ├── chunking/                          # Document chunking and text splitting
-│   │   ├── __init__.py                    # Python package initializer
-│   │   └── chunker.py                     # Splits documents into smaller chunks for retrieval
-│   │
-│   ├── embeddings/                        # Embedding model management
-│   │   ├── __init__.py                    # Python package initializer
-│   │   └── embedding_model.py             # Loads and manages Hugging Face embedding model
-│   │
-│   ├── evaluation/                        # RAG quality and evaluation components
-│   │
-│   ├── generation/                        # Query processing and answer generation
-│   │   ├── __init__.py                    # Python package initializer
-│   │   ├── context.py                     # Selects and builds relevant context for the LLM
-│   │   ├── generator.py                   # Handles final answer generation
-│   │   ├── llm.py                         # Groq LLM configuration and generation
-│   │   ├── prompt.py                      # Builds grounded prompts using retrieved context
-│   │   └── query_rewriter.py              # Rewrites user queries to improve retrieval
-│   │
-│   ├── ingestion/                         # Document ingestion and preprocessing pipeline
-│   │   ├── __init__.py                    # Python package initializer
-│   │   ├── ingest.py                      # Main document ingestion process
-│   │   ├── loaders.py                     # Loads PDF, DOCX, TXT, and other supported documents
-│   │   └── processor.py                   # Processes and prepares documents for indexing
-│   │
-│   ├── langgraph/                         # LangGraph workflow foundation
-│   │   ├── __init__.py                    # Python package initializer
-│   │   ├── graph.py                       # Defines the LangGraph workflow
-│   │   ├── nodes.py                       # Defines individual workflow nodes
-│   │   └── state.py                       # Defines shared workflow state
-│   │
-│   ├── retrieval/                         # Hybrid document retrieval system
-│   │   ├── __init__.py                    # Python package initializer
-│   │   ├── bm25.py                        # Keyword-based sparse retrieval using BM25
-│   │   ├── hybrid.py                      # Combines semantic and BM25 retrieval using RRF
-│   │   ├── rerank.py                      # Cross-encoder reranking of retrieved documents
-│   │   └── retriever.py                   # Semantic similarity retrieval from ChromaDB
-│   │
-│   ├── tools/                             # Utility tools used by the chatbot
-│   │   ├── __init__.py                    # Python package initializer
-│   │   ├── calculator.py                  # Handles mathematical calculations
-│   │   ├── date.py                        # Handles date and time-related queries
-│   │   ├── document_lookup.py             # Looks up relevant company documents
-│   │   ├── query_router.py                # Routes queries to RAG or appropriate tools
-│   │   └── web_search.py                  # Handles supported web search queries
-│   │
-│   ├── vectorstore/                       # Vector database and embedding storage
-│   │   ├── __init__.py                    # Python package initializer
-│   │   └── chroma.py                           # ChromaDB/vector store management files
-│   │
-│   ├── config.py                          # RAG configuration and pipeline settings
-│   └── pipeline.py                        # Main RAG pipeline connecting all RAG components
-│
-├── requirements/                          # Project dependency configuration
-│   └── requirements.txt                   # Python packages required to run the project
-│
-├── scripts/                               # Utility and manual testing scripts
-│   ├── restore_documents.py               # Restores or reprocesses document data
-│   ├── test_bm25_manual.py                # Manually tests BM25 retrieval
-│   ├── test_graph_manual.py               # Manually tests LangGraph workflow
-│   ├── test_hybrid_manual.py              # Manually tests hybrid retrieval
-│   ├── test_llm_manual.py                 # Manually tests LLM generation
-│   ├── test_prompt_manual.py              # Manually tests prompt construction
-│   ├── test_reranker_manual.py            # Manually tests document reranking
-│   └── test_retriever_manual.py           # Manually tests semantic retrieval
-│
-├── templates/                             # Global Django HTML templates
-│   ├── admin/                              # Admin dashboard and user management pages
-│   │   ├── add_user.html                   # Admin page for creating users
-│   │   ├── dashboard.html                  # Admin dashboard
-│   │   ├── manage_users.html               # User management interface
-│   │   └── reset_password.html              # Password reset interface
-│   │
-│   ├── documents/                          # Document management interface
-│   │   └── manage_documents.html           # Upload and manage knowledge documents
-│   │
-│   ├── employee/                           # Employee interface
-│   │   └── employee_dashboard.html         # Employee dashboard with RAGLink chatbot
-│   │
-│   ├── home/                               # Home page
-│   │   └── index.html                      # Main landing page
-│   │
-│   ├── registration/                       # Authentication pages
-│   │   ├── admin_login.html                # Admin login page
-│   │   ├── employee_login.html             # Employee login page
-│   │   └── teamlead_login.html             # Team Lead login page
-│   │
-│   ├── teamlead/                           # Team Lead interface
-│   │
-│   └── base.html                            # Common base template shared by pages
-│
-├── tests/                                  # Automated unit and integration tests
-│   ├── test_bm25.py                        # Tests BM25 retrieval
-│   ├── test_generation_quality.py          # Tests generated answer quality
-│   ├── test_generation.py                  # Tests answer generation
-│   ├── test_graph.py                       # Tests LangGraph workflow
-│   ├── test_hybrid.py                      # Tests hybrid retrieval
-│   ├── test_ingestion.py                   # Tests document ingestion
-│   ├── test_llm.py                         # Tests LLM functionality
-│   ├── test_pipeline.py                    # Tests complete RAG pipeline
-│   ├── test_prompt.py                      # Tests prompt construction
-│   ├── test_rag_quality.py                 # Tests RAG answers against expected answers
-│   ├── test_reranker.py                    # Tests cross-encoder reranking
-│   └── test_retriever.py                   # Tests semantic retrieval
-│
-├── .env                                    # Environment variables and API credentials
-├── .gitignore                              # Files excluded from Git
-├── manage.py                               # Django project command-line utility
-└── README.md                               # Project documentation
-
+Presentation Layer
+        │
+        ▼
+Authentication
+        │
+        ▼
+Chat Interface
+        │
+        ▼
+Query Router
+        │
+        ▼
+Enterprise RAG Pipeline
+        │
+        ▼
+Knowledge Retrieval
+        │
+        ▼
+Response Generation
 ```
-# 🧪 Testing
 
-RAGLink includes unit tests for major components of the system.
 
-Run all tests using:
+# 🧠 Enterprise RAG Pipeline
+
+Unlike a traditional chatbot that directly sends user queries to a Large Language Model (LLM), **RAGLink** follows a multi-stage Retrieval-Augmented Generation (RAG) pipeline. Each stage improves the quality of retrieval and ensures that responses are grounded in enterprise knowledge rather than relying solely on the model's pre-trained information.
+
+---
+
+## 🔄 Complete RAG Workflow
+
+```mermaid
+flowchart LR
+
+A["👤 User Query"]
+B["🧠 Query Understanding"]
+C["🎯 Retrieval Planner"]
+D["🔎 Hybrid Retrieval"]
+E["📚 ChromaDB"]
+F["🔤 BM25"]
+G["⚖️ Reciprocal Rank Fusion"]
+H["🎯 Cross-Encoder Reranker"]
+I["📑 Context Refinement"]
+J["🗜️ Context Compression"]
+K["🛡️ Evidence Validation"]
+L["📝 Prompt Builder"]
+M["🤖 Groq Llama 3.1"]
+N["✅ Grounded Response"]
+
+A --> B
+B --> C
+C --> D
+D --> E
+D --> F
+E --> G
+F --> G
+G --> H
+H --> I
+I --> J
+J --> K
+K --> L
+L --> M
+M --> N
+```
+
+---
+
+# 📖 Pipeline Stages
+
+## 1️⃣ Query Understanding
+
+The query is analyzed before retrieval to improve search quality.
+
+### Responsibilities
+
+- Query Rewriting
+- Intent Classification
+- Entity Extraction
+- Entity Normalization
+- Query Expansion
+- Metadata Detection
+
+### Example
+
+**Input**
+
+```text
+Tell me about Meridian cloud.
+```
+
+↓
+
+**Optimized Query**
+
+```text
+Explain the cloud infrastructure used in Project Meridian.
+```
+
+---
+
+## 2️⃣ Intelligent Retrieval Planning
+
+Instead of searching every document, RAGLink first determines **where** the query should search.
+
+The Retrieval Planner identifies:
+
+- Project Documents
+- Company Policies
+- HR Documents
+- Infrastructure Guides
+- Technical Documentation
+- Metadata Filters
+
+This reduces unnecessary retrieval and improves response accuracy.
+
+---
+
+## 3️⃣ Hybrid Retrieval
+
+RAGLink combines two complementary retrieval strategies:
+
+### 🔹 Semantic Retrieval
+
+- Uses HuggingFace Embeddings
+- Searches ChromaDB
+- Finds semantically similar content
+
+### 🔹 Sparse Retrieval
+
+- Uses BM25
+- Matches exact keywords
+- Handles technical terms and abbreviations
+
+Both retrieval results are merged using **Reciprocal Rank Fusion (RRF)**.
+
+---
+
+## Hybrid Retrieval Architecture
+
+```mermaid
+flowchart TB
+
+A["Optimized Query"]
+
+B["Semantic Search"]
+
+C["Sparse Search"]
+
+D["ChromaDB"]
+
+E["BM25"]
+
+F["RRF Fusion"]
+
+G["Candidate Documents"]
+
+A --> B
+A --> C
+B --> D
+C --> E
+D --> F
+E --> F
+F --> G
+```
+
+---
+
+## 4️⃣ Cross-Encoder Reranking
+
+The retrieved documents are scored using a Cross-Encoder model to identify the most relevant chunks.
+
+### Benefits
+
+- Better ranking quality
+- Reduced irrelevant context
+- Improved final answer accuracy
+
+---
+
+## 5️⃣ Context Processing
+
+Before generation, the retrieved content is optimized.
+
+### Context Refinement
+
+- Removes duplicate chunks
+- Cleans noisy text
+- Orders information logically
+
+### Context Compression
+
+- Keeps only the most relevant content
+- Reduces prompt size
+- Improves response speed
+
+---
+
+## 6️⃣ Evidence Validation
+
+Before sending the prompt to the LLM, RAGLink verifies that the retrieved evidence is sufficient.
+
+If relevant evidence is unavailable, the system avoids hallucinations and informs the user that the requested information is not available in the enterprise knowledge base.
+
+---
+
+## 7️⃣ Prompt Construction
+
+The Prompt Builder combines:
+
+- User Query
+- Retrieved Context
+- System Instructions
+- Safety Constraints
+
+into a structured prompt for the language model.
+
+---
+
+## 8️⃣ Response Generation
+
+The final prompt is passed to **Groq Llama 3.1**, which generates a grounded response using only the retrieved enterprise knowledge.
+
+---
+
+# 📄 Dynamic Document Ingestion
+
+Administrators can upload new enterprise documents without rebuilding the entire knowledge base.
+
+Whenever a document is uploaded, the system automatically:
+
+1. Extracts text
+2. Splits the document into chunks
+3. Generates embeddings
+4. Updates ChromaDB
+5. Updates the BM25 index
+
+The document becomes immediately searchable.
+
+---
+
+## Document Ingestion Workflow
+
+```mermaid
+flowchart LR
+
+A["📄 Upload Document"]
+B["📝 Text Extraction"]
+C["✂️ Chunking"]
+D["🧠 Embedding Generation"]
+E["📚 ChromaDB"]
+F["🔤 BM25 Index"]
+G["✅ Ready for Retrieval"]
+
+A --> B
+B --> C
+C --> D
+D --> E
+C --> F
+E --> G
+F --> G
+```
+
+---
+
+# 🔀 Query Routing
+
+Not every query requires the RAG pipeline.
+
+The Query Router classifies incoming requests and forwards them to the appropriate module.
+
+| Query Type | Destination |
+|------------|-------------|
+| Enterprise Knowledge | RAG Pipeline |
+| Mathematical Expressions | Calculator Tool |
+| Date & Time | Date/Time Tool |
+| Web Queries | Web Search Tool |
+
+---
+
+## Query Router Workflow
+
+```mermaid
+flowchart TB
+
+A["👤 User Query"]
+
+B["🧭 Query Router"]
+
+C["🧠 Enterprise RAG"]
+
+D["🧮 Calculator"]
+
+E["📅 Date & Time"]
+
+F["🌐 Web Search"]
+
+A --> B
+
+B -->|Knowledge Query| C
+
+B -->|Math Query| D
+
+B -->|Date/Time| E
+
+B -->|Web Query| F
+```
+
+---
+
+# ⚡ Performance Optimizations
+
+RAGLink includes several optimizations to improve retrieval efficiency and reduce response latency.
+
+- 🧠 Memory Cache
+- ⚡ Redis Cache
+- 🔄 Dynamic Index Updates
+- 🎯 Hybrid Retrieval
+- 📊 Cross-Encoder Reranking
+- 🗜️ Context Compression
+- 🛡️ Evidence Validation
+
+These optimizations ensure fast, scalable, and reliable enterprise question answering.
+
+---
+# 📂 Project Structure
+
+RAGLink follows a **modular architecture**, where each module is responsible for a specific stage of the Retrieval-Augmented Generation (RAG) pipeline. This separation improves maintainability, scalability, and simplifies future enhancements.
+
+```text
+RAGLink
+│
+├── accounts/                      # User authentication & role management
+│   ├── admin.py                   # Admin panel configuration
+│   ├── forms.py                   # Authentication forms
+│   ├── models.py                  # Custom User model
+│   ├── urls.py                    # Authentication routes
+│   ├── views.py                   # Login, logout & dashboard views
+│   └── migrations/                # Database migrations
+│
+├── chatbot/                       # Chat interface & conversation management
+│   ├── services.py                # Connects UI with the RAG pipeline
+│   ├── views.py                   # Chat request handlers
+│   ├── urls.py                    # Chat endpoints
+│   └── models.py                  # Chat history
+│
+├── config/                        # Django project configuration
+│   ├── settings.py                # Project settings
+│   ├── urls.py                    # Root URL configuration
+│   ├── wsgi.py                    # WSGI entry point
+│   └── asgi.py                    # ASGI entry point
+│
+├── data/                          # Generated indexes and retrieval data
+│   ├── bm25.pkl                   # BM25 index
+│   ├── chunks.pkl                 # Stored document chunks
+│   └── chroma_db/                 # Chroma vector database
+│
+├── documents/                     # Enterprise document management
+│   ├── admin.py                   # Admin configuration
+│   ├── forms.py                   # Upload forms
+│   ├── models.py                  # Document model
+│   ├── urls.py                    # Document routes
+│   ├── views.py                   # Upload/Delete operations
+│   └── migrations/
+│
+├── media/
+│   ├── Company/                   # Company documents
+│   └── Projects/                  # Project documents
+│
+├── rag/                           # Core Enterprise RAG System
+│
+│   ├── cache/                     # Memory & Redis caching
+│   │   ├── memory_cache.py
+│   │   └── redis_cache.py
+│   │
+│   ├── chunking/                  # Document chunking
+│   │   └── chunker.py
+│   │
+│   ├── compression/               # Context compression
+│   │   └── compressor.py
+│   │
+│   ├── embeddings/                # Embedding generation
+│   │   └── embedding_model.py
+│   │
+│   ├── evaluation/                # Pipeline evaluation
+│   │   └── metrics.py
+│   │
+│   ├── generation/                # Response generation
+│   │   ├── citation.py
+│   │   ├── context.py
+│   │   ├── evidence_checker.py
+│   │   ├── llm.py
+│   │   └── prompt.py
+│   │
+│   ├── ingestion/                 # Document indexing
+│   │   ├── document_indexer.py
+│   │   ├── dynamic_ingestion.py
+│   │   ├── index_manager.py
+│   │   └── loader.py
+│   │
+│   ├── langgraph/                 # LangGraph workflow
+│   │   ├── graph.py
+│   │   ├── nodes.py
+│   │   └── state.py
+│   │
+│   ├── query/                     # Query processing
+│   │   ├── query.py
+│   │   └── rewrite.py
+│   │
+│   ├── query_understanding/       # Query understanding
+│   │   ├── entity_normalizer.py
+│   │   ├── intent_classifier.py
+│   │   ├── query_expander.py
+│   │   └── query_understanding.py
+│   │
+│   ├── refinement/                # Context refinement
+│   │   └── context_refiner.py
+│   │
+│   ├── retrieval/                 # Retrieval engine
+│   │   ├── bm25.py
+│   │   ├── hybrid.py
+│   │   ├── rerank.py
+│   │   ├── retrieval_planner.py
+│   │   └── semantic.py
+│   │
+│   ├── tools/                     # Utility tools
+│   │   ├── calculator.py
+│   │   ├── date.py
+│   │   ├── time.py
+│   │   ├── web_search.py
+│   │   ├── document_lookup.py
+│   │   └── query_router.py
+│   │
+│   ├── vectorstore/               # ChromaDB interface
+│   │   └── chroma.py
+│   │
+│   ├── config.py                  # Pipeline configuration
+│   └── pipeline.py                # Main RAG pipeline
+│
+├── scripts/                       # Helper scripts
+├── templates/                     # HTML templates
+├── tests/                         # Unit tests
+├── requirements/                  # Project dependencies
+├── manage.py                      # Django entry point
+└── README.md
+```
+
+---
+
+# 📌 Module Overview
+
+| Module | Responsibility |
+|---------|----------------|
+| **accounts** | Handles authentication, authorization, and role-based access control. |
+| **chatbot** | Connects the user interface with the RAG pipeline and manages conversations. |
+| **documents** | Uploads, stores, and manages enterprise documents. |
+| **media** | Stores company and project documents used as the knowledge base. |
+| **cache** | Improves performance using Memory and Redis caching. |
+| **chunking** | Splits large documents into smaller chunks for retrieval. |
+| **compression** | Reduces context size while preserving relevant information. |
+| **embeddings** | Generates vector embeddings for semantic search. |
+| **generation** | Builds prompts, validates evidence, and generates responses. |
+| **ingestion** | Dynamically processes and indexes uploaded documents. |
+| **langgraph** | Defines the workflow orchestration for the RAG pipeline. |
+| **query** | Performs query rewriting and preprocessing. |
+| **query_understanding** | Detects user intent, extracts entities, and expands queries. |
+| **refinement** | Cleans and refines retrieved context before generation. |
+| **retrieval** | Implements semantic search, BM25 retrieval, hybrid retrieval, and reranking. |
+| **tools** | Provides utility tools such as calculator, date/time, and web search. |
+| **vectorstore** | Handles storage and retrieval of embeddings using ChromaDB. |
+| **tests** | Contains unit and integration tests for the project. |
+
+---
+
+# 🧠 Core RAG Modules
+
+The `rag/` package is the heart of the application and is responsible for transforming enterprise documents into a searchable knowledge base.
+
+### 📥 Ingestion
+Processes uploaded documents by extracting text, splitting it into chunks, generating embeddings, and updating retrieval indexes.
+
+### 🧠 Query Understanding
+Analyzes user queries by identifying intent, extracting entities, rewriting queries, and expanding search terms.
+
+### 🔍 Retrieval
+Performs hybrid retrieval using semantic similarity (ChromaDB) and keyword search (BM25), followed by reranking.
+
+### 📑 Context Processing
+Refines and compresses retrieved information to remove irrelevant content and reduce prompt size.
+
+### 🤖 Generation
+Constructs optimized prompts, validates retrieved evidence, and generates grounded responses using Groq Llama 3.1.
+
+### ⚡ LangGraph
+Coordinates the end-to-end workflow by connecting each stage of the RAG pipeline into a structured execution graph.
+
+# ⚙️ Installation & Setup
+
+## Prerequisites
+
+Before running the project, ensure the following are installed:
+
+- Python 3.13+
+- Git
+- MySQL
+- Groq API Key
+- Virtual Environment (recommended)
+
+---
+
+## Clone the Repository
 
 ```bash
-python -m unittest discover -s tests -p "test_*.py" -v
+git clone https://github.com/Srisilpa/RagLink.git
+cd RagLink
 ```
 
-The project tests include:
+---
 
-* BM25 retrieval
-* Semantic retrieval
-* Hybrid retrieval
-* Cross-Encoder reranking
-* Document ingestion
-* Prompt generation
-* LLM generation
-* RAG pipeline
-* LangGraph workflow
-* RAG answer quality
+## Create a Virtual Environment
 
-The current testing approach uses **Python unittest-based tests** and custom RAG quality checks.
+### Windows
+
+```bash
+python -m venv venv
+
+venv\Scripts\activate
+```
+
+### Linux / macOS
+
+```bash
+python3 -m venv venv
+
+source venv/bin/activate
+```
 
 ---
 
-# 🔐 Security
+## Install Dependencies
 
-* Environment variables are used for API keys.
-* Sensitive configuration is stored in `.env`.
-* `.env` is excluded from Git using `.gitignore`.
-* Role-based access is implemented for Admin, Team Lead, and Employee users.
-
----
-
-# 🔮 Future Enhancements
-
-* Improve retrieval accuracy for complex multi-part questions.
-* Add better document metadata filtering.
-* Improve source citation display.
-* Add conversation memory.
-* Add document-level access control.
-* Add advanced analytics and user feedback.
-* Improve query routing.
-* Expand LangGraph workflow integration.
-* Add automated RAG evaluation using dedicated evaluation frameworks.
-* Allowing multiple users to be added at once.
+```bash
+pip install -r requirements/requirements.txt
+```
 
 ---
 
-# 👩‍💻 Project Summary
+## Environment Variables
 
-RAGLink demonstrates how enterprise documents can be combined with modern AI technologies to create a reliable internal knowledge assistant.
+Create a `.env` file in the project root.
 
-The system combines:
+```env
+GROQ_API_KEY=your_groq_api_key
+SECRET_KEY=your_django_secret_key
 
-**Django + MySQL**
-↓
-**Document Ingestion**
-↓
-**HuggingFace Embeddings**
-↓
-**ChromaDB + BM25**
-↓
-**Hybrid Retrieval + RRF**
-↓
-**Cross-Encoder Reranking**
-↓
-**Context Selection**
-↓
-**Groq Llama 3.1**
-↓
-**Grounded Enterprise Answer**
+DB_NAME=raglink
+DB_USER=root
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=3306
+```
 
 ---
 
-## 📜 License
+## Apply Database Migrations
 
-This project is licensed under the MIT License.
+```bash
+python manage.py makemigrations
 
-````
+python manage.py migrate
+```
+
+---
+
+## Create an Admin User
+
+```bash
+python manage.py createsuperuser
+```
+
+---
+
+## Start the Development Server
+
+```bash
+python manage.py runserver
+```
+
+Open your browser and visit
+
+```
+http://127.0.0.1:8000/
+```
+
+---
+
+# 📚 Document Ingestion
+
+The system automatically processes uploaded enterprise documents.
+
+### Supported Formats
+
+- PDF
+- DOCX
+- TXT
+
+---
+
+## Ingestion Workflow
+
+```mermaid
+flowchart LR
+
+A["Upload Document"]
+
+-->
+
+B["Extract Text"]
+
+-->
+
+C["Chunk Document"]
+
+-->
+
+D["Generate Embeddings"]
+
+-->
+
+E["Update ChromaDB"]
+
+-->
+
+F["Update BM25"]
+
+-->
+
+G["Available for Retrieval"]
+```
+
+---
+
+# 🧪 Testing
+
+The project includes unit tests for different RAG components.
+
+Run all tests
+
+```bash
+python -m unittest discover tests
+```
+
+Run a specific test
+
+```bash
+python -m unittest tests.test_pipeline
+```
+
+Example test coverage includes
+
+- Document Ingestion
+- BM25 Retrieval
+- Hybrid Retrieval
+- Query Understanding
+- Generation Pipeline
+- Complete RAG Pipeline
+
+---
+
+# 📈 Future Enhancements
+
+The architecture is designed to support future extensions.
+
+Planned improvements include:
+
+- GraphRAG Integration
+- Knowledge Graph Support
+- Multi-modal RAG (Images & PDFs)
+- Streaming Responses
+- Voice Assistant
+- Multi-language Support
+- OCR for Scanned Documents
+- Agentic Tool Calling
+- Advanced Evaluation Metrics
+- Source Citation Highlighting
+- Conversation Memory
+- Document Versioning
+- Kubernetes Deployment
+- CI/CD Pipeline
+- Docker Compose Support
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome!
+
+To contribute:
+
+1. Fork the repository.
+2. Create a feature branch.
+
+```bash
+git checkout -b feature/new-feature
+```
+
+3. Commit your changes.
+
+```bash
+git commit -m "Add new feature"
+```
+
+4. Push the branch.
+
+```bash
+git push origin feature/new-feature
+```
+
+5. Open a Pull Request.
+
+---
+
+# 🌟 Highlights
+
+✔ Enterprise-grade Django application
+
+✔ Modular RAG Architecture
+
+✔ Query Understanding Pipeline
+
+✔ Intelligent Retrieval Planning
+
+✔ Hybrid Retrieval (Semantic + BM25)
+
+✔ Reciprocal Rank Fusion (RRF)
+
+✔ Cross-Encoder Reranking
+
+✔ Context Refinement
+
+✔ Context Compression
+
+✔ Evidence Validation
+
+✔ Dynamic Document Ingestion
+
+✔ ChromaDB Integration
+
+✔ Groq Llama 3.1 Integration
+
+✔ LangGraph Workflow
+
+✔ Role-Based Authentication
+
+✔ Memory & Redis Cache
+
+✔ Unit Testing
+
+✔ Extensible Architecture
+
+---
+
+# 👩‍💻 Author
+
+**Sri Silpa**
+
+**B.Tech Information Technology**
+
+**Shri Vishnu Engineering College for Women**
+
+GitHub: **https://github.com/Srisilpa**
+
+---
+
+# 📄 License
+
+This project is licensed under the **MIT License**.
+
+Feel free to use, modify, and distribute this project for educational and research purposes.
+
+---
+
+# 🙏 Acknowledgements
+
+This project leverages several open-source technologies:
+
+- Django
+- LangChain
+- LangGraph
+- Groq
+- ChromaDB
+- HuggingFace
+- BM25
+- Python
+
+Special thanks to the open-source community for providing the tools and frameworks that made this project possible.
+
+---
+
+<div align="center">
+
+### ⭐ If you found this project useful, consider giving it a star on GitHub!
+
+**Built with ❤️ using Django, LangChain, LangGraph, ChromaDB, BM25, and Groq Llama 3.1**
+
+</div>
