@@ -78,6 +78,7 @@ groq
 ddgs
 
 # ======================
-# Evaluation
+# Production
 # ======================
-ragas
+gunicorn
+whitenoise

@@ -1,24 +1,35 @@
-# Python
+venv/
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Virtual Environment
-venv/
+.git
+.gitignore
 
-# Environment Variables
 .env
+.env.*
 
-# Chroma Vector Database
-chroma_db/
-
-# Generated BM25 chunks
-data/chunks.pkl
-
-# IDE
 .vscode/
 .idea/
 
-# Generated RAG data
-data/
+db.sqlite3
 
-chroma_db_backup/
+staticfiles/
+
+*.log
+
+README.md
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+
+# Chroma database (local)
+data/chroma/
+media/chroma/
+chroma/
+
+# OS files
+.DS_Store
+Thumbs.db
