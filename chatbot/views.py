@@ -8,79 +8,46 @@ import traceback
 
 from .services import ChatService
 
-
-chat_service = ChatService()
-
+# Lazy initialization
+chat_service = None
 
 
 @login_required
 def chatbot_page(request):
-
     return render(
         request,
         "chatbot/chat.html"
     )
 
 
-
 @csrf_exempt
 def chat(request):
 
-    if request.method != "POST":
+    global chat_service
 
+    if chat_service is None:
+        print("Initializing ChatService...")
+        chat_service = ChatService()
+
+    if request.method != "POST":
         return JsonResponse(
-            {
-                "error": "POST request required"
-            },
+            {"error": "POST request required"},
             status=405
         )
 
-
     try:
 
-        data = json.loads(
-            request.body
-        )
+        data = json.loads(request.body)
 
+        question = data.get("message", "")
 
-        question = data.get(
-            "message",
-            ""
-        )
+        result = chat_service.ask(question)
 
-
-        print("==============================")
-        print("CHAT SERVICE INPUT:")
-        print(question)
-        print(type(question))
-        print("==============================")
-
-
-
-        result = chat_service.ask(
-            question
-        )
-
-
-        print("\n========== RESULT ==========")
-        print(result)
-        print("============================\n")
-
-
-        return JsonResponse(
-            result
-        )
-
-
+        return JsonResponse(result)
 
     except Exception as e:
 
-        print("\n========== ERROR ==========")
-
         traceback.print_exc()
-
-        print("===========================\n")
-
 
         return JsonResponse(
             {
