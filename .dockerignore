@@ -1,24 +1,47 @@
+# Virtual environment
 venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
 
-.git
+# Git
+.git/
 .gitignore
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment
 .env
 
-db.sqlite3
-
-media/chroma/
-data/chroma/
-
-staticfiles/
-
-README.md
-
+# IDE
 .vscode/
 .idea/
 
+# Logs
 *.log
+
+# Static
+staticfiles/
+
+# Databases
+db.sqlite3
+
+# Chroma
+chroma_db/
+chroma_db_backup/
+data/
+
+# Models
+models/
+cache/
+
+# HuggingFace cache
+.huggingface/
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Documentation
+README.md

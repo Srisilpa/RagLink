@@ -1,13 +1,9 @@
-# ======================
 # Django
-# ======================
 Django>=5.2
 PyMySQL
 python-dotenv
 
-# ======================
 # LangChain
-# ======================
 langchain
 langchain-core
 langchain-community
@@ -15,51 +11,36 @@ langchain-text-splitters
 langchain-huggingface
 langchain-groq
 
-# ======================
 # LangGraph
-# ======================
 langgraph
 
-# ======================
 # Vector Database
-# ======================
 chromadb
 faiss-cpu
 
-# ======================
 # Embeddings
-# ======================
 sentence-transformers
 transformers
-torch
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.8.0
 accelerate
 
-# ======================
 # Document Loaders
-# ======================
 pypdf
 PyMuPDF
 python-docx
 docx2txt
 
-# ======================
 # Retrieval
-# ======================
 rank-bm25
 
-# ======================
 # Reranker
-# ======================
 FlagEmbedding
 
-# ======================
 # Cache
-# ======================
 redis
 
-# ======================
 # Utilities
-# ======================
 requests
 tiktoken
 pandas
@@ -67,18 +48,12 @@ numpy
 scikit-learn
 tqdm
 
-# ======================
 # Groq
-# ======================
 groq
 
-# ======================
 # Web Search
-# ======================
 ddgs
 
-# ======================
 # Production
-# ======================
 gunicorn
 whitenoise

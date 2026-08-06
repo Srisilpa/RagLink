@@ -19,7 +19,6 @@ def home(request):
 # -------------------------
 
 def admin_login(request):
-
     if request.method == "POST":
 
         username = request.POST.get("username")
