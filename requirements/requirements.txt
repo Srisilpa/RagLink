@@ -16,14 +16,12 @@ langgraph
 
 # Vector Database
 chromadb
-faiss-cpu
 
 # Embeddings
-sentence-transformers
-transformers
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.8.0
-accelerate
+transformers
+sentence-transformers
 
 # Document Loaders
 pypdf
@@ -34,18 +32,13 @@ docx2txt
 # Retrieval
 rank-bm25
 
-# Reranker
-FlagEmbedding
-
 # Cache
 redis
 
 # Utilities
 requests
 tiktoken
-pandas
 numpy
-scikit-learn
 tqdm
 
 # Groq

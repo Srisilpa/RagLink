@@ -31,6 +31,9 @@ chroma_db/
 chroma_db_backup/
 data/
 
+# User uploaded files
+media/
+
 # Models
 models/
 cache/
